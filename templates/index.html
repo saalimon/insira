@@ -36,24 +36,6 @@
                     }
                 });
             });
-            $('#upload').on('click', function () {
-                var fd = new FormData();
-                fd.append('file', this.files[0]); // since this is your file input
-                $.ajax({
-                    url: '/data',
-                    type: "POST",
-                    dataType: 'json',
-                    processData: false, // important
-                    contentType: false, // important
-                    data: fd,
-                    success: function (res) {
-                        console.log(res)
-                        // console.log(JSON.stringify(res));
-                        // console.log(res.name)
-                        // alert(JSON.stringify(res));
-                    }
-                });
-            });
         });
 
         // $.ajax({
@@ -79,11 +61,6 @@
         Click me
     </label>
     <input type="file" id="exampleInput" style="display: none" />
-    <br>
-    <label for="exampleInput" class="btn btn-default">
-        upload
-    </label>
-    <input type="button" id="upload" style="display: none" />
 </body>
 
 </html>

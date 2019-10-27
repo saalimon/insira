@@ -7,17 +7,7 @@ api = Api(app)
 
 df = pd.read_csv('mtcars.csv')
 
-stores = [
-    {
-        'name': 'test store',
-        'items': [
-            {
-                'name': 'item1',
-                'price': 10
-            }
-        ]
-    }
-]
+data_columns = []
 
 #root 
 @app.route('/')
@@ -31,17 +21,23 @@ def pandas_show():
 #RESTful API 
 class Data(Resource):
     def get(self, name):
-        return jsonify({'name': name})
+        pass
+        # return render_template('simple.html',  tables=[df.to_html(classes='data')], titles=df.columns.values)
+        # return jsonify({'name': name})
     def post(self, name): 
         pass
 # for Upload CSV data
 class Upload(Resource):
     def get(self):
-        passx
+        pass
     def post(self):
         file = request.files['file']
         data = pd.read_csv(file)
-        print(data)
+        print(data.dtypes)
+        print(data.corr())
+        print(data.describe())
+        data_columns = data.columns.tolist()
+        print(data_columns)
         return 'success'
 
 api.add_resource(Upload, '/data')
