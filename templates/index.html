@@ -1,0 +1,89 @@
+<html>
+
+<head>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            $.ajax({
+                url: '/data/test',
+                type: "GET",
+                dataType: 'json',
+                success: function (res) {
+                    console.log(JSON.stringify(res));
+                    console.log(res.name)
+                    // alert(JSON.stringify(res));
+                }
+            });
+            $("#exampleInput").change(function () {
+                var fd = new FormData();
+                fd.append('file', this.files[0]); // since this is your file input
+
+                $.ajax({
+                    url: "/data",
+                    type: "post",
+                    dataType: 'json',
+                    processData: false, // important
+                    contentType: false, // important
+                    data: fd,
+                    success: function (text) {
+                        alert(text);
+                        if (text == "success") {
+                            alert("Your data was uploaded successfully");
+                        }
+                    },
+                    error: function () {
+                        alert("An error occured, please try again.");
+                    }
+                });
+            });
+            $('#upload').on('click', function () {
+                var fd = new FormData();
+                fd.append('file', this.files[0]); // since this is your file input
+                $.ajax({
+                    url: '/data',
+                    type: "POST",
+                    dataType: 'json',
+                    processData: false, // important
+                    contentType: false, // important
+                    data: fd,
+                    success: function (res) {
+                        console.log(res)
+                        // console.log(JSON.stringify(res));
+                        // console.log(res.name)
+                        // alert(JSON.stringify(res));
+                    }
+                });
+            });
+        });
+
+        // $.ajax({
+        //     url: "/data/test",
+        //     type: 'GET',
+        //     dataType: 'json', // added data type
+        //     success: function (res) {
+        //         console.log(res);
+        //         alert(res);
+        //     }
+        // });
+    </script>
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css" rel="stylesheet" />
+
+</head>
+
+<body>
+    <div>
+        Hello, eiei
+    </div>
+    <!-- minimal setup -->
+    <label for="exampleInput" class="btn btn-default">
+        Click me
+    </label>
+    <input type="file" id="exampleInput" style="display: none" />
+    <br>
+    <label for="exampleInput" class="btn btn-default">
+        upload
+    </label>
+    <input type="button" id="upload" style="display: none" />
+</body>
+
+</html>
