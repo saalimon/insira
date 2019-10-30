@@ -2,6 +2,7 @@
 
 <head>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css" rel="stylesheet" />
     <script>
         $(document).ready(function () {
             $.ajax({
@@ -37,18 +38,7 @@
                 });
             });
         });
-
-        // $.ajax({
-        //     url: "/data/test",
-        //     type: 'GET',
-        //     dataType: 'json', // added data type
-        //     success: function (res) {
-        //         console.log(res);
-        //         alert(res);
-        //     }
-        // });
     </script>
-    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css" rel="stylesheet" />
 
 </head>
 
@@ -56,9 +46,8 @@
     <div>
         Hello, test front end for Backend Dev
     </div>
-    <!-- minimal setup -->
     <label for="exampleInput" class="btn btn-default">
-        Click me
+        Upload CSV
     </label>
     <input type="file" id="exampleInput" style="display: none" />
 </body>
