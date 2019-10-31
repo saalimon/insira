@@ -14,11 +14,10 @@ def random():
 @app.route('/')
 def home():
     random()
-    # return session['number']
     return render_template('index.html')
 
 api.add_resource(Upload, '/data')
 api.add_resource(Data, '/data/<string:name>')
 
-app.secret_key = ".."
+app.secret_key = "Miyawaki Sakura"
 app.run(port=5000)

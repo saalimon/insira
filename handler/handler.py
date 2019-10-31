@@ -19,9 +19,7 @@ class Data(Resource):
 # for Upload CSV data
 class Upload(Resource):
     def get(self):
-        # df = pd.read_mesgpack(session['data']) # read_mesgpack depricated
-        df_as_json = df.to_dict(orient='records')
-        return jsonify({'status': 'ok', 'json_data': df_as_json})
+        return jsonify({'status': 'ok', 'json_data': session['data']})
     def post(self):
         file = request.files['file']
         data = pd.read_csv(file)
@@ -29,6 +27,6 @@ class Upload(Resource):
         global df
         df = data_separator(data_conversion(data))
         print(df)
-        # data_to_session = df.to_msgpack()
-        # session['data'] = data_to_session
-        return 'success'
+        data_to_session = df.to_dict(orient='records')
+        session['data'] = data_to_session
+        return "success",200
