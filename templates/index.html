@@ -1,21 +1,20 @@
+<!DOCTYPE html>
 <html>
-
 <head>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
     <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css" rel="stylesheet" />
     <script>
         $(document).ready(function () {
             $.ajax({
-                url: '/data/test',
+                url: '/data/mpg',
                 type: "GET",
                 dataType: 'json',
                 success: function (res) {
                     console.log(JSON.stringify(res));
                     console.log(res.name)
-                    // alert(JSON.stringify(res));
                 }
             });
-            $("#exampleInput").change(function () {
+            $("#Input").change(function () {
                 var fd = new FormData();
                 fd.append('file', this.files[0]); // since this is your file input
 
@@ -46,10 +45,9 @@
     <div>
         Hello, test front end for Backend Dev
     </div>
-    <label for="exampleInput" class="btn btn-default">
+    <label for="Input" class="btn btn-default">
         Upload CSV
     </label>
-    <input type="file" id="exampleInput" style="display: none" />
+    <input type="file" id="Input" style="display: none" />
 </body>
-
 </html>

@@ -15,6 +15,9 @@ def random():
 def home():
     random()
     return render_template('index.html')
+@app.route('/d3')
+def d3():
+    return render_template('d3.html')
 
 api.add_resource(Upload, '/data')
 api.add_resource(Data, '/data/<string:name>')

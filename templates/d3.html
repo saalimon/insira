@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<script src="https://d3js.org/d3.v4.js"></script>
+
+<head>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+</head>
+
+<body>
+    <div>
+        Hello, this is visualization test
+    </div>
+</body>
+<div id="my_dataviz"></div>
+<script>
+    var margin = { top: 10, right: 30, bottom: 30, left: 40 },
+        width = 460 - margin.left - margin.right,
+        height = 400 - margin.top - margin.bottom;
+
+    var svg = d3.select("#my_dataviz")
+        .append("svg")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+        .append("g")
+        .attr("transform",
+            "translate(" + margin.left + "," + margin.top + ")");
+    $(document).ready(function () {
+        $.ajax({
+            url: '/data/mpg',
+            type: "GET",
+            dataType: 'json',
+            success: function (res) {
+                console.log(JSON.stringify(res));
+                console.log(res.name)
+                for (var i = 0; i < res.length; i++) {
+                    console.log(res[i]);
+                }
+                var x = d3.scaleLinear()
+                    .domain([0, 40])     // can use this instead of 1000 to have the max of data: d3.max(data, function(d) { return +d.price })
+                    .range([0, width]);
+                svg.append("g")
+                    .attr("transform", "translate(0," + height + ")")
+                    .call(d3.axisBottom(x));
+                var histogram = d3.histogram()
+                    .value(function (d) { return d.mpg; })   // I need to give the vector of value
+                    .domain(x.domain())  // then the domain of the graphic
+                    .thresholds(x.ticks(20)); // then the numbers of bins
+                var bins = histogram(res);
+                var y = d3.scaleLinear()
+                    .range([height, 0]);
+                y.domain([0, d3.max(bins, function (d) { return d.length; })]);   // d3.hist has to be called before the Y axis obviously
+                svg.append("g")
+                    .call(d3.axisLeft(y));
+
+                // append the bar rectangles to the svg element
+                svg.selectAll("rect")
+                    .data(bins)
+                    .enter()
+                    .append("rect")
+                    .attr("x", 1)
+                    .attr("transform", function (d) { return "translate(" + x(d.x0) + "," + y(d.length) + ")"; })
+                    .attr("width", function (d) { return x(d.x1) - x(d.x0) - 1; })
+                    .attr("height", function (d) { return height - y(d.length); })
+                    .style("fill", "#69b3a2")
+            }
+        });
+    });
+</script>
+
+</html>
