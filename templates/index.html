@@ -1,46 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
-    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css" rel="stylesheet" />
-    <script>
-        $(document).ready(function () {
-            $.ajax({
-                url: '/data/mpg',
-                type: "GET",
-                dataType: 'json',
-                success: function (res) {
-                    console.log(JSON.stringify(res));
-                    console.log(res.name)
-                }
-            });
-            $("#Input").change(function () {
-                var fd = new FormData();
-                fd.append('file', this.files[0]); // since this is your file input
-
-                $.ajax({
-                    url: "/data",
-                    type: "post",
-                    dataType: 'json',
-                    processData: false, // important
-                    contentType: false, // important
-                    data: fd,
-                    success: function (text) {
-                        alert(text);
-                        if (text == "success") {
-                            alert("Your data was uploaded successfully");
-                        }
-                    },
-                    error: function () {
-                        alert("An error occured, please try again.");
-                    }
-                });
-            });
-        });
-    </script>
-
 </head>
-
 <body>
     <div>
         Hello, test front end for Backend Dev
@@ -51,3 +12,40 @@
     <input type="file" id="Input" style="display: none" />
 </body>
 </html>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+<link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css" rel="stylesheet" />
+<script>
+    $(document).ready(function () {
+        $.ajax({
+            url: '/data/mpg',
+            type: "GET",
+            dataType: 'json',
+            success: function (res) {
+                console.log(JSON.stringify(res));
+                console.log(res.name)
+            }
+        });
+        $("#Input").change(function () {
+            var fd = new FormData();
+            fd.append('file', this.files[0]); // since this is your file input
+
+            $.ajax({
+                url: "/data",
+                type: "post",
+                dataType: 'json',
+                processData: false, // important
+                contentType: false, // important
+                data: fd,
+                success: function (text) {
+                    alert(text);
+                    if (text == "success") {
+                        alert("Your data was uploaded successfully");
+                    }
+                },
+                error: function () {
+                    alert("An error occured, please try again.");
+                }
+            });
+        });
+    });
+</script>

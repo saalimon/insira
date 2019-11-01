@@ -15,14 +15,12 @@ class Data(Resource):
         newdata = data.filter([name], axis=1)
         print(newdata)
         return jsonify(newdata.to_dict(orient='records'))
-        # return render_template('simple.html',  tables=[df.to_html(classes='data')], titles=df.columns.values)
-        # return jsonify(df.to_json(orient='records'))
     def post(self, name): 
         pass
 # for Upload CSV data
 class Upload(Resource):
     def get(self):
-        return jsonify({'status': 'ok', 'json_data': session['data']})
+        return jsonify({'status': 'ok', 'data': data.to_dict(orient='split')})
     def post(self):
         file = request.files['file']
         global data
