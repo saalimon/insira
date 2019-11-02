@@ -9,6 +9,7 @@ from dataprep import data_separator,data_conversion
 
 blank = []
 df = pd.DataFrame(blank, columns=['A', 'B', 'C'])
+data = pd.DataFrame(blank, columns=['A', 'B', 'C'])
 
 class Data(Resource):
     def get(self, name):
@@ -29,6 +30,8 @@ class Upload(Resource):
         global df
         df = data_separator(data_conversion(data))
         print(df)
+        # show numeric type columns
+        print(df[df.col_type == "numeric"].col_name.to_list())
         data_to_session = df.to_dict(orient='records')
         session['data'] = data_to_session
         return "success",200

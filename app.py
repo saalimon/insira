@@ -18,6 +18,9 @@ def home():
 @app.route('/d3')
 def d3():
     return render_template('d3.html')
+@app.route('/d3_2')
+def d3_2():
+    return render_template('d3_2.html')
 
 api.add_resource(Upload, '/data')
 api.add_resource(Data, '/data/<string:name>')
