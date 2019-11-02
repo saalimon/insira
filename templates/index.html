@@ -17,7 +17,7 @@
 <script>
     $(document).ready(function () {
         $.ajax({
-            url: '/data/mpg',
+            url: '/data?arg1=mpg',
             type: "GET",
             dataType: 'json',
             success: function (res) {
@@ -30,7 +30,7 @@
             fd.append('file', this.files[0]); // since this is your file input
 
             $.ajax({
-                url: "/data",
+                url: "/upload",
                 type: "post",
                 dataType: 'json',
                 processData: false, // important

@@ -22,8 +22,8 @@ def d3():
 def d3_2():
     return render_template('d3_2.html')
 
-api.add_resource(Upload, '/data')
-api.add_resource(Data, '/data/<string:name>')
+api.add_resource(Upload, '/upload')
+api.add_resource(Data, '/data')
 
 app.secret_key = "Miyawaki Sakura"
 app.run(port=5000)
