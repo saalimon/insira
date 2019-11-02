@@ -5,7 +5,7 @@ def data_separator (df):
     '''This function recieve a dataframe that will seperate & convert data into proper category'''
     
     #Init list for checking ordinal and returning list
-    ordinal_list = ['day','month','year','time']
+    ordinal_list = ['day','month','year','time_from_date']
     col_type = []
         
     for col in df.columns:
