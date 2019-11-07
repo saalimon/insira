@@ -26,7 +26,7 @@
             "translate(" + margin.left + "," + margin.top + ")");
     $(document).ready(function () {
         $.ajax({
-            url: '/data/mpg',
+            url: '/data?arg1=mpg',
             type: "GET",
             dataType: 'json',
             success: function (res) {
@@ -34,6 +34,7 @@
                 for (var i = 0; i < res.length; i++) {
                     console.log(res[i]);
                 }
+                
                 var x = d3.scaleLinear()
                     .domain([0, 40])     // can use this instead of 1000 to have the max of data: d3.max(data, function(d) { return +d.price })
                     .range([0, width]);

@@ -27,37 +27,64 @@
         .append("g")
         .attr("transform",
             "translate(" + margin.left + "," + margin.top + ")");
+    // Add X axis 4000
+    var x = d3.scaleLinear()
+        .domain([0, 200])
+        .range([0, width]);
+    svg.append("g")
+        .attr("transform", "translate(0," + height + ")")
+        .call(d3.axisBottom(x));
 
+    // Add Y axis 500000
+    var y = d3.scaleLinear()
+        .domain([0, 50])
+        .range([height, 0]);
+    svg.append("g")
+        .call(d3.axisLeft(y));
+    $(document).ready(function () {
+        $.ajax({
+            url: '/data?arg1=mpg&arg2=qsec',
+            type: 'GET',
+            dataType: 'json',
+            success: function (res) {
+
+                for (var i = 0; i < res.length; i++) {
+                    console.log(res[i]);
+                }
+
+                // Add X axis 4000
+                var x = d3.scaleLinear()
+                    .domain([0, 30])
+                    .range([0, width]);
+                svg.append("g")
+                    .attr("transform", "translate(0," + height + ")")
+                    .call(d3.axisBottom(x));
+
+                // Add Y axis 500000
+                var y = d3.scaleLinear()
+                    .domain([0, 30])
+                    .range([height, 0]);
+                svg.append("g")
+                    .call(d3.axisLeft(y));
+                // Add dots
+                svg.append('g')
+                    .selectAll("dot")
+                    .data(res)
+                    .enter()
+                    .append("circle")
+                    .attr("cx", function (d) { return x(d.mpg); })
+                    .attr("cy", function (d) { return y(d.qsec); })
+                    .attr("r", 1.5)
+                    .style("fill", "#69b3a2")
+
+            }
+        })
+    });
     //Read the data
-    d3.csv("https://raw.githubusercontent.com/holtzy/data_to_viz/master/Example_dataset/2_TwoNum.csv", function (data) {
+    // d3.csv("https://raw.githubusercontent.com/holtzy/data_to_viz/master/Example_dataset/2_TwoNum.csv", function (data) {
 
-        // Add X axis
-        var x = d3.scaleLinear()
-            .domain([0, 4000])
-            .range([0, width]);
-        svg.append("g")
-            .attr("transform", "translate(0," + height + ")")
-            .call(d3.axisBottom(x));
 
-        // Add Y axis
-        var y = d3.scaleLinear()
-            .domain([0, 500000])
-            .range([height, 0]);
-        svg.append("g")
-            .call(d3.axisLeft(y));
-
-        // Add dots
-        svg.append('g')
-            .selectAll("dot")
-            .data(data)
-            .enter()
-            .append("circle")
-            .attr("cx", function (d) { return x(d.GrLivArea); })
-            .attr("cy", function (d) { return y(d.SalePrice); })
-            .attr("r", 1.5)
-            .style("fill", "#69b3a2")
-
-    })
+    // })
 
 </script>
 
