@@ -21,7 +21,10 @@ def d3():
 @app.route('/d3_2')
 def d3_2():
     return render_template('d3_2.html')
-
+@app.route('/d3_3')
+def d3_3():
+    return render_template('d3_3.html')
+    
 api.add_resource(Upload, '/upload')
 api.add_resource(Data, '/data')
 

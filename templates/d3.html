@@ -26,15 +26,23 @@
             "translate(" + margin.left + "," + margin.top + ")");
     $(document).ready(function () {
         $.ajax({
-            url: '/data?arg1=mpg',
+            url: '/data?arg1=distribution',
             type: "GET",
             dataType: 'json',
             success: function (res) {
-                console.log(JSON.stringify(res));
-                for (var i = 0; i < res.length; i++) {
-                    console.log(res[i]);
+                // console.log(JSON.stringify(res));
+                // for (var i = 0; i < res.length; i++) {
+                //     console.log(res[i]);
+                // }
+                var temp = res['values']
+                var data = []
+                var keys = []
+                for (var i = 0; i < temp.length; i++) {
+                    keys[i] = Object.keys(temp[i])[0]          
+                    data[i] = temp[i][keys[i]]      
                 }
-                
+                // console.log(data)
+
                 var x = d3.scaleLinear()
                     .domain([0, 40])     // can use this instead of 1000 to have the max of data: d3.max(data, function(d) { return +d.price })
                     .range([0, width]);
@@ -45,7 +53,7 @@
                     .value(function (d) { return d.mpg; })   // I need to give the vector of value
                     .domain(x.domain())  // then the domain of the graphic
                     .thresholds(x.ticks(20)); // then the numbers of bins
-                var bins = histogram(res);
+                var bins = histogram(data[0]);
                 var y = d3.scaleLinear()
                     .range([height, 0]);
                 y.domain([0, d3.max(bins, function (d) { return d.length; })]);   // d3.hist has to be called before the Y axis obviously
