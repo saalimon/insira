@@ -36,7 +36,7 @@ class Data(Resource):
             # newdata = data[df[df.col_type == "numeric"].col_name.to_list()]
             
             return distribution
-        elif args1 == '2corr':
+        elif args1 == 'scatter':
             # tempdict = {}
             tempdict = {'Colnames':[],'Values':[],'Descriptions':[]}
             corrlist = data_type[(data_type.col_1_type == "numeric") & (data_type.col_2_type == "numeric")].loc[:, ['col_1_name','col_2_name']].values.tolist()
@@ -51,14 +51,15 @@ class Data(Resource):
             print(data.corr())
             heat = data.corr()
             a = heat.unstack().to_dict()
-            heat = {'colname':[],'values':[]}
+            heat = {'Colnames':[],'Values':[],'Descriptions':[]}
             for a_i in a:
                 print("%s %s %f"%(a_i[0],a_i[1],a[a_i]))
-                heat['values'].append({'X':a_i[0],'Y':a_i[1],'value':a[a_i]})
+                heat['Values'].append({'X':a_i[0],'Y':a_i[1],'value':a[a_i]})
             colname = df[df.col_type == "numeric"].col_name.to_list()
             # print({x for x in colname})
             for x in colname:
-                heat['colname'].append(x)
+                heat['Colnames'].append(x)
+            heat['Descriptions'].append("This graph show")
             return heat
             # return jsonify(heat.unstack().to_dict())
         return jsonify(newdata.to_dict(orient='records'))
