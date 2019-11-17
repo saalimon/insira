@@ -8,10 +8,11 @@
 
 <body>
     <div>
-        Hello, this is visualization test of scatter plot
+        Correlation between numerical data
     </div>
 </body>
 <div id="my_dataviz"></div>
+<div id="sel"></div>
 <script>
 
     // set the dimensions and margins of the graph
@@ -43,7 +44,7 @@
         .call(d3.axisLeft(y));
     $(document).ready(function () {
         $.ajax({
-            url: '/data?arg1=mpg&arg2=qsec',
+            url: '/data?arg1=scatter',
             type: 'GET',
             dataType: 'json',
             success: function (res) {

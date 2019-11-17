@@ -31,22 +31,23 @@ class Data(Resource):
             colname = df[df.col_type == "numeric"].col_name.to_list()
             for x in colname:
                 distribution['Colnames'].append(x)
-                distribution['Values'].append({x:data.filter([x], axis=1).to_dict(orient='records')})
+                distribution_df = data.filter([x], axis=1)
+                distribution_df.columns = ['value']
+                distribution['Values'].append({x:distribution_df.to_dict(orient='records')})
                 distribution['Descriptions'].append({x:"This graph show"})
             # newdata = data[df[df.col_type == "numeric"].col_name.to_list()]
-            
+            # use by path /d3
             return distribution
         elif args1 == 'scatter':
-            # tempdict = {}
-            tempdict = {'Colnames':[],'Values':[],'Descriptions':[]}
+            scatter = {'Colnames':[],'Values':[],'Descriptions':[]}
             corrlist = data_type[(data_type.col_1_type == "numeric") & (data_type.col_2_type == "numeric")].loc[:, ['col_1_name','col_2_name']].values.tolist()
             for corr in corrlist:
                 str1 = ','.join([str(elem) for elem in corr]) 
                 temp = data[corr].to_dict(orient='records')
-                tempdict['Colnames'].append(str1)
-                tempdict['Values'].append({str1:temp})
-                tempdict['Descriptions'].append({str1:"This graph show"})
-            return tempdict
+                scatter['Colnames'].append(str1)
+                scatter['Values'].append({str1:temp})
+                scatter['Descriptions'].append({str1:"This graph show"})
+            return scatter
         elif args1 == 'heatmap':
             print(data.corr())
             heat = data.corr()
@@ -56,12 +57,28 @@ class Data(Resource):
                 print("%s %s %f"%(a_i[0],a_i[1],a[a_i]))
                 heat['Values'].append({'X':a_i[0],'Y':a_i[1],'value':a[a_i]})
             colname = df[df.col_type == "numeric"].col_name.to_list()
-            # print({x for x in colname})
             for x in colname:
                 heat['Colnames'].append(x)
             heat['Descriptions'].append("This graph show")
             return heat
-            # return jsonify(heat.unstack().to_dict())
+        elif args1 == 'boxplot':
+            boxplot = {'Colnames':[],'Values':[],'Descriptions':[]}
+
+            return boxplot
+        elif args1 == 'bar_cat':
+            bar_cat = {'Colnames':[],'Values':[],'Descriptions':[]}
+
+            return bar_cat
+        elif args1 == 'bar_num':
+            bar_num = {'Colnames':[],'Values':[],'Descriptions':[]}
+
+            return bar_num
+        elif args1 == 'line':
+            line = {'Colnames':[],'Values':[],'Descriptions':[]}
+            
+            return line
+        else:
+            pass
         return jsonify(newdata.to_dict(orient='records'))
     def post(self): 
         pass
