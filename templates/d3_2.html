@@ -16,32 +16,10 @@
 <script>
 
     // set the dimensions and margins of the graph
-    var margin = { top: 10, right: 30, bottom: 30, left: 60 },
+    var margin = { top: 30, right: 30, bottom: 30, left: 60 },
         width = 460 - margin.left - margin.right,
         height = 400 - margin.top - margin.bottom;
 
-    // append the svg object to the body of the page
-    var svg = d3.select("#my_dataviz")
-        .append("svg")
-        .attr("width", width + margin.left + margin.right)
-        .attr("height", height + margin.top + margin.bottom)
-        .append("g")
-        .attr("transform",
-            "translate(" + margin.left + "," + margin.top + ")");
-    // Add X axis 4000
-    var x = d3.scaleLinear()
-        .domain([0, 200])
-        .range([0, width]);
-    svg.append("g")
-        .attr("transform", "translate(0," + height + ")")
-        .call(d3.axisBottom(x));
-
-    // Add Y axis 500000
-    var y = d3.scaleLinear()
-        .domain([0, 50])
-        .range([height, 0]);
-    svg.append("g")
-        .call(d3.axisLeft(y));
     $(document).ready(function () {
         $.ajax({
             url: '/data?arg1=scatter',
@@ -49,35 +27,73 @@
             dataType: 'json',
             success: function (res) {
 
-                for (var i = 0; i < res.length; i++) {
-                    console.log(res[i]);
+                var temp = res['Values']
+                var data = []
+                var keys = []
+                const len = temp.length
+                console.log("length ", len)
+                for (var i = 0; i < len; i++) {
+                    keys[i] = Object.keys(temp[i])[0]
+                    data[i] = temp[i][keys[i]]
                 }
 
-                // Add X axis 4000
-                var x = d3.scaleLinear()
-                    .domain([0, 30])
-                    .range([0, width]);
-                svg.append("g")
-                    .attr("transform", "translate(0," + height + ")")
-                    .call(d3.axisBottom(x));
+                var toAdd = document.createDocumentFragment();
+                for (var i = 0; i < len; i++) {
+                    var newDiv = document.createElement('div');
+                    newDiv.id = 'data' + i;
+                    newDiv.className = 'dataviz';
+                    toAdd.appendChild(newDiv);
+                }
+                $('#sel').append(toAdd);
+                var svg = [];
+                for (var i = 0; i < len; i++) {
+                    var datatemp = "#data" + i;
+                    // append the svg object to the body of the page
+                    svg[i] = d3.select(datatemp)
+                        .append("svg")
+                        .attr("width", width + margin.left + margin.right)
+                        .attr("height", height + margin.top + margin.bottom)
+                        .append("g")
+                        .attr("transform",
+                            "translate(" + margin.left + "," + margin.top + ")");
+                    var max_x = d3.max(data[i], function (d) { return +d.x })
+                    var min_x = d3.min(data[i], function (d) { return +d.x })
+                    console.log(min_x,max_x)
+                    // Add X axis
+                    var x = d3.scaleLinear()
+                        .domain([min_x, max_x])
+                        .range([0, width]);
+                    svg[i].append("g")
+                        .attr("transform", "translate(0," + height + ")")
+                        .call(d3.axisBottom(x));
+                    var max_y = d3.max(data[i], function (d) { return +d.y })
+                    var min_y = d3.min(data[i], function (d) { return +d.y })
+                    // Add Y axis
+                    var y = d3.scaleLinear()
+                        .domain([min_y, max_y])
+                        .range([height, 0]);
+                    svg[i].append("g")
+                        .call(d3.axisLeft(y));
+                    svg[i].append('g')
+                        .selectAll("dot")
+                        .data(data[i])
+                        .enter()
+                        .append("circle")
+                        .attr("cx", function (d) { return x(d.x); })
+                        .attr("cy", function (d) { return y(d.y); })
+                        .attr("r", 1.5)
+                        .style("fill", "#69b3a2")
+                    var title = "correlation of "+keys[i]
+                    console.log(title);
+                    svg[i].append("text")
+                        .attr("x", (width / 2))
+                        .attr("y", 0 - (margin.top / 2))
+                        .attr("text-anchor", "middle")
+                        .style("font-size", "16px")
+                        .style("text-decoration", "underline")
+                        .text(title);
 
-                // Add Y axis 500000
-                var y = d3.scaleLinear()
-                    .domain([0, 30])
-                    .range([height, 0]);
-                svg.append("g")
-                    .call(d3.axisLeft(y));
-                // Add dots
-                svg.append('g')
-                    .selectAll("dot")
-                    .data(res)
-                    .enter()
-                    .append("circle")
-                    .attr("cx", function (d) { return x(d.mpg); })
-                    .attr("cy", function (d) { return y(d.qsec); })
-                    .attr("r", 1.5)
-                    .style("fill", "#69b3a2")
-
+                }
             }
         })
     });

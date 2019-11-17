@@ -5,7 +5,7 @@ import pandas as pd
 import sys
 import json
 sys.path.insert(0, './functions')
-from dataprep import data_separator,data_conversion,data_combinator
+from dataprep import data_separator,data_conversion,data_combinator,cat_unique_count
 
 blank = []
 df = pd.DataFrame(blank, columns=['A', 'B', 'C'])
@@ -43,7 +43,9 @@ class Data(Resource):
             corrlist = data_type[(data_type.col_1_type == "numeric") & (data_type.col_2_type == "numeric")].loc[:, ['col_1_name','col_2_name']].values.tolist()
             for corr in corrlist:
                 str1 = ','.join([str(elem) for elem in corr]) 
-                temp = data[corr].to_dict(orient='records')
+                temp = data[corr]
+                temp.columns = ['x','y']
+                temp = temp.to_dict(orient='records')
                 scatter['Colnames'].append(str1)
                 scatter['Values'].append({str1:temp})
                 scatter['Descriptions'].append({str1:"This graph show"})
@@ -66,6 +68,9 @@ class Data(Resource):
 
             return boxplot
         elif args1 == 'bar_cat':
+            temp = cat_unique_count(data,df)
+            for name in temp:
+                print(temp[name])
             bar_cat = {'Colnames':[],'Values':[],'Descriptions':[]}
 
             return bar_cat

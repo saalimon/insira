@@ -78,3 +78,21 @@ def data_combinator(df_type):
     df_send = pd.DataFrame(send_list) 
     
     return df_send
+
+def cat_unique_count(df, df_type):
+    '''This function recieve a data type dataframe and original dataframe which return a dictionary that contain
+    dataframes of category type column. The key of dictionary is column name and the value
+    of dictionary is dataframe of those column. Each dataframe contain a column with a list 
+    unqiue value and a column with a count of each value'''
+
+    dict_dataframe_collection = {}
+
+    df_send_filter_cat = df_type.loc[(df_type.col_type == 'category')]
+    cat_col = [col for col in df_send_filter_cat['col_name']] 
+
+    for cat in cat_col:
+        df_aggregate = df.groupby(cat)[cat].count().to_frame()
+        del df_aggregate.index.name
+        dict_dataframe_collection[cat] = pd.DataFrame(df_aggregate, columns=[cat])
+
+    return dict_dataframe_collection
