@@ -9,11 +9,14 @@ def cat_unique_count(df, df_type):
     of dictionary is dataframe of those column. Each dataframe contain a column with a list 
     unqiue value and a column with a count of each value'''
 
+    #init dictionary
     dict_dataframe_collection = {}
 
+    #filter category
     df_send_filter_cat = df_type.loc[(df_type.col_type == 'category')]
     cat_col = [col for col in df_send_filter_cat['col_name']] 
 
+    #count each unique value from filtered dataframe
     for cat in cat_col:
         df_aggregate = df.groupby(cat)[cat].count().to_frame()
         del df_aggregate.index.name
