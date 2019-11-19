@@ -37,7 +37,7 @@ class Data(Resource):
                 distribution['Descriptions'].append({x:"This graph show"})
             # newdata = data[df[df.col_type == "numeric"].col_name.to_list()]
             # use by path /d3
-            return distribution
+            return distribution, {'Access-Control-Allow-Origin': '*'}
         elif args1 == 'scatter':
             scatter = {'Colnames':[],'Values':[],'Descriptions':[]}
             corrlist = data_type[(data_type.col_1_type == "numeric") & (data_type.col_2_type == "numeric")].loc[:, ['col_1_name','col_2_name']].values.tolist()
@@ -49,7 +49,7 @@ class Data(Resource):
                 scatter['Colnames'].append(str1)
                 scatter['Values'].append({str1:temp})
                 scatter['Descriptions'].append({str1:"This graph show"})
-            return scatter
+            return scatter, {'Access-Control-Allow-Origin': '*'}
         elif args1 == 'heatmap':
             print(data.corr())
             heat = data.corr()
@@ -62,7 +62,7 @@ class Data(Resource):
             for x in colname:
                 heat['Colnames'].append(x)
             heat['Descriptions'].append("This graph show")
-            return heat
+            return heat, {'Access-Control-Allow-Origin': '*'}
         elif args1 == 'boxplot':
             boxplot = {'Colnames':[],'Values':[],'Descriptions':[]}
             colname = df[df.col_type == "numeric"].col_name.to_list()
@@ -71,7 +71,7 @@ class Data(Resource):
                 boxplot_df = data.filter([x], axis=1)
                 boxplot['Values'].append({x:boxplot_df[x].to_list()})
                 boxplot['Descriptions'].append({x:"This graph show"}) 
-            return boxplot
+            return boxplot, {'Access-Control-Allow-Origin': '*'}
         elif args1 == 'bar_cat':
             temp = cat_unique_count(data,df)
             bar_cat = {'Colnames':[],'Values':[],'Descriptions':[]}
@@ -84,24 +84,24 @@ class Data(Resource):
                     bar.append({'name':i,'value':tempT[i]})
                 bar_cat['Values'].append({x:bar})
                 bar_cat['Descriptions'].append({x:"This graph show"})
-            return bar_cat
+            return bar_cat, {'Access-Control-Allow-Origin': '*'}
         elif args1 == 'bar_num':
             bar_num = {'Colnames':[],'Values':[],'Descriptions':[]}
 
-            return bar_num
+            return bar_num, {'Access-Control-Allow-Origin': '*'}
         elif args1 == 'line':
             line = {'Colnames':[],'Values':[],'Descriptions':[]}
             
-            return line
+            return line, {'Access-Control-Allow-Origin': '*'}
         else:
             pass
-        return jsonify(newdata.to_dict(orient='records'))
+        return jsonify(newdata.to_dict(orient='records')), {'Access-Control-Allow-Origin': '*'}
     def post(self): 
         pass
 # for Upload CSV data
 class Upload(Resource):
     def get(self):
-        return jsonify({'status': 'ok', 'data': data.to_dict(orient='split')})
+        return jsonify({'status': 'ok', 'data': data.to_dict(orient='split')}), {'Access-Control-Allow-Origin': '*'}
     def post(self):
         file = request.files['file']
         global data
@@ -119,4 +119,4 @@ class Upload(Resource):
         print("histogram length is %d"%len(df[df.col_type == "numeric"].col_name.to_list()))
         data_to_session = df.to_dict(orient='records')
         session['data'] = data_to_session
-        return "success",200
+        return "success", {'Access-Control-Allow-Origin': '*'}

@@ -1,11 +1,14 @@
 from flask import Flask, render_template, session
 from flask_restful import Resource, Api
+from flask_cors import CORS, cross_origin
 import sys
 sys.path.insert(0, './handler')
 from handler import Data, Upload
 from uuid import uuid4
 
 app = Flask(__name__)
+cors = CORS(app)
+app.config['CORS_HEADERS'] = 'Content-Type'
 api = Api(app)
 def random():
     session['number'] = str(uuid4())
