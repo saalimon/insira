@@ -15,16 +15,30 @@ def random():
 def home():
     random()
     return render_template('index.html')
-@app.route('/d3')
+@app.route('/visualize')
+def visualize():
+    return render_template('visualize.html')
+@app.route('/d3') 
 def d3():
+    # d3 is histogram distribution of data
     return render_template('d3.html')
 @app.route('/d3_2')
 def d3_2():
+    # d3_2 is correlation scatter plot of data
     return render_template('d3_2.html')
 @app.route('/d3_3')
 def d3_3():
+    # d3_3 is heatmap of data pearson correlation
     return render_template('d3_3.html')
-    
+@app.route('/d3_4')
+def d3_4():
+    # d3_4 is barchart of single catergorical data
+    return render_template('d3_4.html')
+@app.route('/d3_5')
+def d3_5():
+    # d3_5 is boxplot of single numerical data
+    return render_template('d3_5.html')
+
 api.add_resource(Upload, '/upload')
 api.add_resource(Data, '/data')
 

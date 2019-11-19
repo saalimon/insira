@@ -8,25 +8,24 @@
 
 <body>
     <div>
-        Correlation between numerical data
+        Bar plot of single catergorical data
     </div>
 </body>
 <div id="my_dataviz"></div>
 <div id="sel"></div>
 <script>
 
+
     // set the dimensions and margins of the graph
-    var margin = { top: 30, right: 30, bottom: 30, left: 60 },
+    var margin = { top: 30, right: 30, bottom: 70, left: 60 },
         width = 460 - margin.left - margin.right,
         height = 400 - margin.top - margin.bottom;
-
     $(document).ready(function () {
         $.ajax({
-            url: '/data?arg1=scatter',
+            url: '/data?arg1=bar_cat',
             type: 'GET',
             dataType: 'json',
             success: function (res) {
-
                 var temp = res['Values']
                 var data = []
                 var keys = []
@@ -56,34 +55,38 @@
                         .append("g")
                         .attr("transform",
                             "translate(" + margin.left + "," + margin.top + ")");
-                    var max_x = d3.max(data[i], function (d) { return +d.x })
-                    var min_x = d3.min(data[i], function (d) { return +d.x })
-                    console.log(min_x,max_x)
-                    // Add X axis
-                    var x = d3.scaleLinear()
-                        .domain([min_x, max_x])
-                        .range([0, width]);
+                    // X axis
+                    var x = d3.scaleBand()
+                        .range([0, width])
+                        .domain(data[i].map(function (d) { return d.name; }))
+                        .padding(0.2);
+                    console.log()
                     svg[i].append("g")
                         .attr("transform", "translate(0," + height + ")")
-                        .call(d3.axisBottom(x));
-                    var max_y = d3.max(data[i], function (d) { return +d.y })
-                    var min_y = d3.min(data[i], function (d) { return +d.y })
+                        .call(d3.axisBottom(x))
+                        .selectAll("text")
+                        .attr("transform", "translate(-10,0)rotate(-45)")
+                        .style("text-anchor", "end");
+                    var max_x = d3.max(data[i], function (d) { return +d.value })
+                    var min_x = d3.min(data[i], function (d) { return +d.value })    
                     // Add Y axis
                     var y = d3.scaleLinear()
-                        .domain([min_y, max_y])
+                        .domain([0, 1.25*max_x])
                         .range([height, 0]);
                     svg[i].append("g")
                         .call(d3.axisLeft(y));
-                    svg[i].append('g')
-                        .selectAll("dot")
+
+                    // Bars
+                    svg[i].selectAll("mybar")
                         .data(data[i])
                         .enter()
-                        .append("circle")
-                        .attr("cx", function (d) { return x(d.x); })
-                        .attr("cy", function (d) { return y(d.y); })
-                        .attr("r", 1.5)
-                        .style("fill", "#69b3a2")
-                    var title = "correlation of "+keys[i]
+                        .append("rect")
+                        .attr("x", function (d) { return x(d.name); })
+                        .attr("y", function (d) { return y(d.value); })
+                        .attr("width", x.bandwidth())
+                        .attr("height", function (d) { return height - y(d.value); })
+                        .attr("fill", "#69b3a2")
+                    var title = "barplot of "+keys[i]
                     console.log(title);
                     svg[i].append("text")
                         .attr("x", (width / 2))
@@ -92,16 +95,25 @@
                         .style("font-size", "16px")
                         .style("text-decoration", "underline")
                         .text(title);
-
                 }
             }
         });
     });
-    //Read the data
-    // d3.csv("https://raw.githubusercontent.com/holtzy/data_to_viz/master/Example_dataset/2_TwoNum.csv", function (data) {
 
 
-    // })
+
+    // Parse the Data
+    d3.csv("https://raw.githubusercontent.com/holtzy/data_to_viz/master/Example_dataset/7_OneCatOneNum_header.csv", function (data) {
+
+
+
+
+
+
+
+
+
+    })
 
 </script>
 

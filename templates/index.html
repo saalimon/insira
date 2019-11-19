@@ -37,10 +37,11 @@
                 contentType: false, // important
                 data: fd,
                 success: function (text) {
-                    alert(text);
-                    if (text == "success") {
-                        alert("Your data was uploaded successfully");
-                    }
+                    // alert(text);
+                    // if (text == "success") {
+                    //     alert("Your data was uploaded successfully");
+                    // }
+                    location.href = "/visualize"
                 },
                 error: function () {
                     alert("An error occured, please try again.");

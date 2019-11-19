@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html>
+<script src="https://d3js.org/d3.v4.js"></script>
+
+<head>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+</head>
+
+<body>
+    <div>
+        Automated data visualization {Test Site}
+    </div>
+</body>
+<!-- <div id="my_dataviz"></div> -->
+<h4>- DISTRIBUTION</h4>
+<div id="distribution"></div>
+<h4>- CORRELATION--</h4>
+<div id="correlation"></div>
+<h4>- BAR COUNT--</h4>
+<div id="barcount"></div>
+
+
+<script>
+    var margin = { top: 30, right: 30, bottom: 30, left: 40 },
+        width = 460 - margin.left - margin.right,
+        height = 400 - margin.top - margin.bottom;
+
+    $(document).ready(function () {
+        $.ajax({
+            url: '/data?arg1=distribution',
+            type: "GET",
+            dataType: 'json',
+            success: function (res) {
+                // console.log(JSON.stringify(res));
+                // for (var i = 0; i < res.length; i++) {
+                //     console.log(res[i]);
+                // }
+                var temp = res['Values']
+                var data = []
+                var keys = []
+                const len = temp.length
+                console.log("length ", len)
+                for (var i = 0; i < len; i++) {
+                    keys[i] = Object.keys(temp[i])[0]
+                    data[i] = temp[i][keys[i]]
+                }
+
+                var toAdd = document.createDocumentFragment();
+                for (var i = 0; i < res['Colnames'].length; i++) {
+                    var newDiv = document.createElement('div');
+                    newDiv.id = 'distribution_data' + i;
+                    newDiv.className = 'dataviz';
+                    toAdd.appendChild(newDiv);
+                }
+                $('#distribution').append(toAdd);
+                var svg = [];
+                for (var i = 0; i < len; i++) {
+                    var datatemp = "#distribution_data" + i;
+                    svg[i] = d3.selectAll(datatemp)
+                        .append("svg")
+                        .attr("width", width + margin.left + margin.right)
+                        .attr("height", height + margin.top + margin.bottom)
+                        .append("g")
+                        .attr("transform",
+                            "translate(" + margin.left + "," + margin.top + ")");
+                    console.log()
+                    var max = d3.max(data[i], function (d) { return +d.value })
+                    var min = d3.min(data[i], function (d) { return +d.value })
+                    var x = d3.scaleLinear()
+                        .domain([min, max])     // can use this instead of 1000 to have the max of data: d3.max(data, function(d) { return +d.price })
+                        .range([0, width]);
+                    svg[i].append("g")
+                        .attr("transform", "translate(0," + height + ")")
+                        .call(d3.axisBottom(x));
+                    var histogram = d3.histogram()
+                        .value(function (d) { return d.value; })   // I need to give the vector of value
+                        .domain(x.domain())  // then the domain of the graphic
+                        .thresholds(x.ticks(30)); // then the numbers of bins
+                    var bins = histogram(data[i]);
+                    var y = d3.scaleLinear()
+                        .range([height, 0]);
+                    y.domain([0, d3.max(bins, function (d) { return d.length; })]);   // d3.hist has to be called before the Y axis obviously
+                    svg[i].append("g")
+                        .call(d3.axisLeft(y));
+
+                    // append the bar rectangles to the svg element
+                    svg[i].selectAll("rect")
+                        .data(bins)
+                        .enter()
+                        .append("rect")
+                        .attr("x", 1)
+                        .attr("transform", function (d) { return "translate(" + x(d.x0) + "," + y(d.length) + ")"; })
+                        .attr("width", function (d) { return x(d.x1) - x(d.x0) - 1; })
+                        .attr("height", function (d) { return height - y(d.length); })
+                        .style("fill", "#69b3a2")
+                    var title = "ditribution of " + keys[i]
+                    console.log(title);
+                    svg[i].append("text")
+                        .attr("x", (width / 2))
+                        .attr("y", 0 - (margin.top / 2))
+                        .attr("text-anchor", "middle")
+                        .style("font-size", "16px")
+                        .style("text-decoration", "underline")
+                        .text(title);
+                }
+
+            }
+        });
+        $.ajax({
+            url: '/data?arg1=scatter',
+            type: 'GET',
+            dataType: 'json',
+            success: function (res) {
+
+                var temp = res['Values']
+                var data = []
+                var keys = []
+                const len = temp.length
+                console.log("length ", len)
+                for (var i = 0; i < len; i++) {
+                    keys[i] = Object.keys(temp[i])[0]
+                    data[i] = temp[i][keys[i]]
+                }
+
+                var toAdd = document.createDocumentFragment();
+                for (var i = 0; i < len; i++) {
+                    var newDiv = document.createElement('div');
+                    newDiv.id = 'correlation_data' + i;
+                    newDiv.className = 'dataviz';
+                    toAdd.appendChild(newDiv);
+                }
+                $('#correlation').append(toAdd);
+                var svg = [];
+                for (var i = 0; i < len; i++) {
+                    var datatemp = "#correlation_data" + i;
+                    // append the svg object to the body of the page
+                    svg[i] = d3.select(datatemp)
+                        .append("svg")
+                        .attr("width", width + margin.left + margin.right)
+                        .attr("height", height + margin.top + margin.bottom)
+                        .append("g")
+                        .attr("transform",
+                            "translate(" + margin.left + "," + margin.top + ")");
+                    var max_x = d3.max(data[i], function (d) { return +d.x })
+                    var min_x = d3.min(data[i], function (d) { return +d.x })
+                    console.log(min_x, max_x)
+                    // Add X axis
+                    var x = d3.scaleLinear()
+                        .domain([min_x, max_x])
+                        .range([0, width]);
+                    svg[i].append("g")
+                        .attr("transform", "translate(0," + height + ")")
+                        .call(d3.axisBottom(x));
+                    var max_y = d3.max(data[i], function (d) { return +d.y })
+                    var min_y = d3.min(data[i], function (d) { return +d.y })
+                    // Add Y axis
+                    var y = d3.scaleLinear()
+                        .domain([min_y, max_y])
+                        .range([height, 0]);
+                    svg[i].append("g")
+                        .call(d3.axisLeft(y));
+                    svg[i].append('g')
+                        .selectAll("dot")
+                        .data(data[i])
+                        .enter()
+                        .append("circle")
+                        .attr("cx", function (d) { return x(d.x); })
+                        .attr("cy", function (d) { return y(d.y); })
+                        .attr("r", 1.5)
+                        .style("fill", "#69b3a2")
+                    var title = "correlation of " + keys[i]
+                    console.log(title);
+                    svg[i].append("text")
+                        .attr("x", (width / 2))
+                        .attr("y", 0 - (margin.top / 2))
+                        .attr("text-anchor", "middle")
+                        .style("font-size", "16px")
+                        .style("text-decoration", "underline")
+                        .text(title);
+
+                }
+            }
+        });
+        $.ajax({
+            url: '/data?arg1=bar_cat',
+            type: 'GET',
+            dataType: 'json',
+            success: function (res) {
+                var temp = res['Values']
+                var data = []
+                var keys = []
+                const len = temp.length
+                console.log("length ", len)
+                for (var i = 0; i < len; i++) {
+                    keys[i] = Object.keys(temp[i])[0]
+                    data[i] = temp[i][keys[i]]
+                }
+
+                var toAdd = document.createDocumentFragment();
+                for (var i = 0; i < len; i++) {
+                    var newDiv = document.createElement('div');
+                    newDiv.id = 'barcount_data' + i;
+                    newDiv.className = 'dataviz';
+                    toAdd.appendChild(newDiv);
+                }
+                $('#barcount').append(toAdd);
+                var svg = [];
+                for (var i = 0; i < len; i++) {
+                    var datatemp = "#barcount_data" + i;
+                    // append the svg object to the body of the page
+                    svg[i] = d3.select(datatemp)
+                        .append("svg")
+                        .attr("width", width + margin.left + margin.right)
+                        .attr("height", height + margin.top + margin.bottom)
+                        .append("g")
+                        .attr("transform",
+                            "translate(" + margin.left + "," + margin.top + ")");
+                    // X axis
+                    var x = d3.scaleBand()
+                        .range([0, width])
+                        .domain(data[i].map(function (d) { return d.name; }))
+                        .padding(0.2);
+                    console.log()
+                    svg[i].append("g")
+                        .attr("transform", "translate(0," + height + ")")
+                        .call(d3.axisBottom(x))
+                        .selectAll("text")
+                        .attr("transform", "translate(-10,0)rotate(-45)")
+                        .style("text-anchor", "end");
+                    var max_x = d3.max(data[i], function (d) { return +d.value })
+                    var min_x = d3.min(data[i], function (d) { return +d.value })    
+                    // Add Y axis
+                    var y = d3.scaleLinear()
+                        .domain([0, 1.25*max_x])
+                        .range([height, 0]);
+                    svg[i].append("g")
+                        .call(d3.axisLeft(y));
+
+                    // Bars
+                    svg[i].selectAll("mybar")
+                        .data(data[i])
+                        .enter()
+                        .append("rect")
+                        .attr("x", function (d) { return x(d.name); })
+                        .attr("y", function (d) { return y(d.value); })
+                        .attr("width", x.bandwidth())
+                        .attr("height", function (d) { return height - y(d.value); })
+                        .attr("fill", "#69b3a2")
+                    var title = "barplot of "+keys[i]
+                    console.log(title);
+                    svg[i].append("text")
+                        .attr("x", (width / 2))
+                        .attr("y", 0 - (margin.top / 2))
+                        .attr("text-anchor", "middle")
+                        .style("font-size", "16px")
+                        .style("text-decoration", "underline")
+                        .text(title);
+                }
+            }
+        });
+
+
+    });
+</script>
+
+</html>

@@ -57,7 +57,7 @@ class Data(Resource):
             heat = {'Colnames':[],'Values':[],'Descriptions':[]}
             for a_i in a:
                 print("%s %s %f"%(a_i[0],a_i[1],a[a_i]))
-                heat['Values'].append({'X':a_i[0],'Y':a_i[1],'value':a[a_i]})
+                heat['Values'].append({'x':a_i[0],'y':a_i[1],'value':a[a_i]})
             colname = df[df.col_type == "numeric"].col_name.to_list()
             for x in colname:
                 heat['Colnames'].append(x)
@@ -65,14 +65,25 @@ class Data(Resource):
             return heat
         elif args1 == 'boxplot':
             boxplot = {'Colnames':[],'Values':[],'Descriptions':[]}
-
+            colname = df[df.col_type == "numeric"].col_name.to_list()
+            for x in colname:
+                boxplot['Colnames'].append(x)
+                boxplot_df = data.filter([x], axis=1)
+                boxplot['Values'].append({x:boxplot_df[x].to_list()})
+                boxplot['Descriptions'].append({x:"This graph show"}) 
             return boxplot
         elif args1 == 'bar_cat':
             temp = cat_unique_count(data,df)
-            for name in temp:
-                print(temp[name])
             bar_cat = {'Colnames':[],'Values':[],'Descriptions':[]}
-
+            for x in temp:
+                bar_cat['Colnames'].append(x)
+                tempT = temp[x].T.to_dict(orient='records')[0]
+                print(tempT)
+                bar = []
+                for i in tempT:
+                    bar.append({'name':i,'value':tempT[i]})
+                bar_cat['Values'].append({x:bar})
+                bar_cat['Descriptions'].append({x:"This graph show"})
             return bar_cat
         elif args1 == 'bar_num':
             bar_num = {'Colnames':[],'Values':[],'Descriptions':[]}
