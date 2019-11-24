@@ -69,6 +69,7 @@
                         .value(function (d) { return d.value; })   // I need to give the vector of value
                         .domain(x.domain())  // then the domain of the graphic
                         .thresholds(x.ticks(30)); // then the numbers of bins
+                        
                     var bins = histogram(data[i]);
                     var y = d3.scaleLinear()
                         .range([height, 0]);
