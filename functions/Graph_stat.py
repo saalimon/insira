@@ -1,3 +1,7 @@
+
+import pandas as pd
+import numpy as np
+
 def numercial_data_distribution(df, df_type):
     '''This function recieve original dataframe & data type and output a
     dataframe of graph skewness of each numerical column in original dataframe'''
