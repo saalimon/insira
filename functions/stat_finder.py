@@ -1,6 +1,7 @@
 
 import pandas as pd
 import numpy as np
+import math
 
 def numercial_data_distribution(df, df_type):
     '''This function recieve original dataframe & data type and output a
