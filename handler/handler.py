@@ -7,26 +7,14 @@ import json
 sys.path.insert(0, './functions')
 from dataprep import data_separator,data_conversion,data_combinator,cat_unique_count
 
-blank = []
-df = pd.DataFrame(blank, columns=['A', 'B', 'C'])
-data = pd.DataFrame(blank, columns=['A', 'B', 'C'])
-
 class Data(Resource):
     def get(self):
         parser = reqparse.RequestParser()
         parser.add_argument('arg1', type=str)
-        # parser.add_argument('arg2', type=str)
         args = parser.parse_args()
         args1 = args['arg1'] 
-        # args2 = args['arg2'] 
-        # print("arg1 = %s arg2 = %s "%(args['arg1'] , args['arg2']))
-        # if args2 == None:
-        #     newdata = data.filter([args['arg1']], axis=1)
-        # else:
-        #     newdata = data[[args1,args2]]
-        # print(newdata)
         if args1 == 'distribution':
-            # newdata = data.filter([args['arg1']], axis=1)
+            # show data distribution of single numerical data 
             distribution = {'Colnames':[],'Values':[],'Descriptions':[]}
             colname = df[df.col_type == "numeric"].col_name.to_list()
             for x in colname:
@@ -35,10 +23,9 @@ class Data(Resource):
                 distribution_df.columns = ['value']
                 distribution['Values'].append({x:distribution_df.to_dict(orient='records')})
                 distribution['Descriptions'].append({x:"This graph show"})
-            # newdata = data[df[df.col_type == "numeric"].col_name.to_list()]
-            # use by path /d3
             return distribution, {'Access-Control-Allow-Origin': '*'}
         elif args1 == 'scatter':
+            # show correlation between 2 numerical data
             scatter = {'Colnames':[],'Values':[],'Descriptions':[]}
             corrlist = data_type[(data_type.col_1_type == "numeric") & (data_type.col_2_type == "numeric")].loc[:, ['col_1_name','col_2_name']].values.tolist()
             for corr in corrlist:
@@ -51,6 +38,7 @@ class Data(Resource):
                 scatter['Descriptions'].append({str1:"This graph show"})
             return scatter, {'Access-Control-Allow-Origin': '*'}
         elif args1 == 'heatmap':
+            # heatmap is not success now will complete within 15 dec 2019
             print(data.corr())
             heat = data.corr()
             a = heat.unstack().to_dict()
@@ -64,6 +52,7 @@ class Data(Resource):
             heat['Descriptions'].append("This graph show")
             return heat, {'Access-Control-Allow-Origin': '*'}
         elif args1 == 'boxplot':
+            # show data qualtile and outliner of single data
             boxplot = {'Colnames':[],'Values':[],'Descriptions':[]}
             colname = df[df.col_type == "numeric"].col_name.to_list()
             for x in colname:
@@ -95,8 +84,10 @@ class Data(Resource):
             
             return line, {'Access-Control-Allow-Origin': '*'}
         else:
-            pass
-        return jsonify(newdata.to_dict(orient='records')), {'Access-Control-Allow-Origin': '*'}
+            return "success", {'Access-Control-Allow-Origin': '*'}
+        # next step is time series variable 
+
+        return "success", {'Access-Control-Allow-Origin': '*'}
     def post(self): 
         pass
 # for Upload CSV data
