@@ -6,6 +6,7 @@ def data_separator (df):
     
     #Init list for checking ordinal and returning list
     ordinal_list = ['day','month','year','time_from_date','date','time']
+    unique_list = ['id','no.','code']
     col_type = [] 
 
     #lower case column name
@@ -14,7 +15,11 @@ def data_separator (df):
     for col in df.columns:
         d_type = df[col].dtype
         unique_value = df[col].unique().size / df.index.size
-        if unique_value == 1:
+
+        #check unqinue name
+        unique_name = [x in col for x in unique_list]
+
+        if unique_value == 1 or True in unique_name:
             col_type.append('unique')
         elif col in ordinal_list:
             col_type.append('ordinal')

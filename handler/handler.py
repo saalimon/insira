@@ -78,6 +78,7 @@ class Data(Resource):
             for x in temp:
                 bar_cat['Colnames'].append(x)
                 tempT = temp[x].T.to_dict(orient='records')[0]
+                print("this is tempT")
                 print(tempT)
                 bar = []
                 for i in tempT:
