@@ -16,7 +16,7 @@ def data_separator (df):
         d_type = df[col].dtype
         unique_value = df[col].unique().size / df.index.size
 
-        #check unqinue name
+        #check unqiue name
         unique_name = [x in col for x in unique_list]
 
         if unique_value == 1 or True in unique_name:
