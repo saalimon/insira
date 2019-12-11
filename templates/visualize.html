@@ -44,7 +44,7 @@
                     keys[i] = Object.keys(temp[i])[0]
                     data[i] = temp[i][keys[i]]
                 }
-
+                const binwidth = Math.round(Math.sqrt(data[0].length))
                 var toAdd = document.createDocumentFragment();
                 for (var i = 0; i < res['Colnames'].length; i++) {
                     var newDiv = document.createElement('div');
@@ -54,8 +54,18 @@
                 }
                 $('#distribution').append(toAdd);
                 var svg = [];
+                var tooltip = []
                 for (var i = 0; i < len; i++) {
                     var datatemp = "#distribution_data" + i;
+                    tooltip[i] = d3.select(datatemp)
+                        .append("div")
+                        .style("opacity", 0)
+                        .attr("class", "tooltip")
+                        .style("background-color", "white")
+                        .style("border", "solid")
+                        .style("border-width", "1px")
+                        .style("border-radius", "5px")
+                        .style("padding", "10px")
                     svg[i] = d3.selectAll(datatemp)
                         .append("svg")
                         .attr("width", width + margin.left + margin.right)
@@ -75,7 +85,7 @@
                     var histogram = d3.histogram()
                         .value(function (d) { return d.value; })   // I need to give the vector of value
                         .domain(x.domain())  // then the domain of the graphic
-                        .thresholds(x.ticks(30)); // then the numbers of bins
+                        .thresholds(x.ticks(binwidth)); // then the numbers of bins
                     var bins = histogram(data[i]);
                     var y = d3.scaleLinear()
                         .range([height, 0]);
@@ -93,6 +103,10 @@
                         .attr("width", function (d) { return x(d.x1) - x(d.x0) - 1; })
                         .attr("height", function (d) { return height - y(d.length); })
                         .style("fill", "#69b3a2")
+                        .on("mouseover", function () { return tooltip[i].style("visibility", "visible"); })
+                        .on("mousemove", function () { return tooltip[i].style("top", (event.pageY - 800) + "px").style("left", (event.pageX - 800) + "px"); })
+                        .on("mouseout", function () { return tooltip[i].style("visibility", "hidden"); });
+
                     var title = "ditribution of " + keys[i]
                     console.log(title);
                     svg[i].append("text")
@@ -166,8 +180,9 @@
                         .append("circle")
                         .attr("cx", function (d) { return x(d.x); })
                         .attr("cy", function (d) { return y(d.y); })
-                        .attr("r", 1.5)
+                        .attr("r", 3)
                         .style("fill", "#69b3a2")
+
                     var title = "correlation of " + keys[i]
                     console.log(title);
                     svg[i].append("text")
@@ -228,10 +243,10 @@
                         .attr("transform", "translate(-10,0)rotate(-45)")
                         .style("text-anchor", "end");
                     var max_x = d3.max(data[i], function (d) { return +d.value })
-                    var min_x = d3.min(data[i], function (d) { return +d.value })    
+                    var min_x = d3.min(data[i], function (d) { return +d.value })
                     // Add Y axis
                     var y = d3.scaleLinear()
-                        .domain([0, 1.25*max_x])
+                        .domain([0, 1.25 * max_x])
                         .range([height, 0]);
                     svg[i].append("g")
                         .call(d3.axisLeft(y));
@@ -246,7 +261,7 @@
                         .attr("width", x.bandwidth())
                         .attr("height", function (d) { return height - y(d.value); })
                         .attr("fill", "#69b3a2")
-                    var title = "barplot of "+keys[i]
+                    var title = "barplot of " + keys[i]
                     console.log(title);
                     svg[i].append("text")
                         .attr("x", (width / 2))

@@ -29,6 +29,7 @@
                 //     console.log(res[i]);
                 // }
                 var temp = res['Values']
+                
                 var data = []
                 var keys = []
                 const len = temp.length
@@ -37,7 +38,7 @@
                     keys[i] = Object.keys(temp[i])[0]
                     data[i] = temp[i][keys[i]]
                 }
-
+                const binwidth = Math.round(Math.sqrt(data[0].length));
                 var toAdd = document.createDocumentFragment();
                 for (var i = 0; i < res['Colnames'].length; i++) {
                     var newDiv = document.createElement('div');
@@ -68,8 +69,7 @@
                     var histogram = d3.histogram()
                         .value(function (d) { return d.value; })   // I need to give the vector of value
                         .domain(x.domain())  // then the domain of the graphic
-                        .thresholds(x.ticks(30)); // then the numbers of bins
-                        
+                        .thresholds(x.ticks(binwidth)); // then the numbers of bins
                     var bins = histogram(data[i]);
                     var y = d3.scaleLinear()
                         .range([height, 0]);
