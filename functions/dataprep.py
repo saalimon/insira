@@ -60,7 +60,7 @@ def data_conversion(df):
         df['year'] = pd.DatetimeIndex(df['new_date']).year
         df['month'] = pd.DatetimeIndex(df['new_date']).month
         df['day'] = pd.DatetimeIndex(df['new_date']).day
-        df.drop(columns=['new_date'])
+        # df.drop(columns=['new_date'])
     except:
         pass
     
