@@ -112,3 +112,29 @@ def cat_unique_count(df, df_type):
         dict_dataframe_collection[cat] = pd.DataFrame(df_aggregate, columns=[cat])
 
     return dict_dataframe_collection
+
+    def find_na(df):
+    '''
+    This function recieve a dataframe and return infrom value that indicate 
+    too many NA/NaN values are presented in any columns or not. It also returns
+    dataframe of column with high NA value that contains ratio of na if any is existed
+    '''
+    
+    na = df.isna().sum() 
+    inform = 0
+    col_index, na_ratio = ([] for i in range(2))
+    data_length = len(df)
+    
+    for index,value in na.iteritems():
+        if value/data_length > 0.05:
+            col_index.append(index)
+            na_ratio.append(value/data_length)
+            inform = 1
+            
+    if inform == 1:
+        na_list = {'col_name':col_index, 'na_ratio': na_ratio}
+        df_na = pd.DataFrame(na_list)
+        df.loc[1,'city'] = 'non'
+        return inform, df_na
+        
+    return inform, None
