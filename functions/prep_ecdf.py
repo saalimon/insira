@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 
-def prep_ecdf(data):
+def prep_ecdf(df):
     ''' function to plot ecdf taking a column of data as input
     and return axis & yaxis for ploting graph. Also return percentage & 
     value of data & argument for use in NLG and score 
@@ -10,8 +10,8 @@ def prep_ecdf(data):
     '''
     
     temp = 0
-    data_length = len(data)
-    xaxis = np.sort(data)
+    data_length = len(df)
+    xaxis = np.sort(df)
     yaxis = np.arange(1, data_length+1)/data_length
     
     for i,v in enumerate(xaxis):
