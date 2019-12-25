@@ -3,18 +3,14 @@ import pandas as pd
 import numpy as np
 import math
 
-def numercial_data_distribution(df, df_type, col_name):
+def numercial_data_distribution(df, col_name):
     '''
-    This function recieve original dataframe & data type and output a 
-    score that use for selecting graph and graph skewness of each
-    numerical column in original dataframe
+    This function recieve original dataframe & data type and output a
+    dataframe of graph skewness of each numerical column in original dataframe
     '''
     
     score = 0
     column_skew = []
-    
-    data_send_filter_num = df_type.loc[(df_type.col_type == 'numeric')]
-    num_col = [col for col in data_send_filter_num['col_name']]
     
     mean = df[col_name].mean()
     med = df[col_name].median()
