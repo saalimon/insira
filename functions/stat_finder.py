@@ -4,8 +4,10 @@ import numpy as np
 import math
 
 def numercial_data_distribution(df, df_type):
-    '''This function recieve original dataframe & data type and output a
-    dataframe of graph skewness of each numerical column in original dataframe'''
+    '''
+    This function recieve original dataframe & data type and output a
+    dataframe of graph skewness of each numerical column in original dataframe
+    '''
     
     column_skew = []
     
@@ -31,9 +33,11 @@ def numercial_data_distribution(df, df_type):
     return df_send
 
 def dominated_category(cat_count):
-    '''This function recieve a dictionary contained count value 
+    '''
+    This function recieve a dictionary contained count value 
     of the category type column(from function cat_data_count.py) and
-    return a dataframe of the dominated attribute of each column if existed'''
+    return a dataframe of the dominated attribute of each column if existed
+    '''
     
     #init list
     col_list, anomal, attribute, value, percent_dominate = ([] for i in range(5))

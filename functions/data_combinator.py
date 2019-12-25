@@ -2,7 +2,10 @@ import pandas as pd
 import numpy as np
 
 def data_combinator(df_type):
-    '''This function receive data type dataframe and will return a combination of column with column type'''
+    '''
+    This function receive data type dataframe and will 
+    return a combination of column with column type
+    '''
     
     #init list of dataframe
     row_1_list, row_2_list, col_1_type, col_2_type = ([] for i in range(4))

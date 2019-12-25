@@ -4,10 +4,12 @@ import pandas as pd
 import numpy as np
 
 def cat_unique_count(df, df_type):
-    '''This function recieve a data type dataframe and original dataframe which return a dictionary that contain
+    '''
+    This function recieve a data type dataframe and original dataframe which return a dictionary that contain
     dataframes of category type column. The key of dictionary is column name and the value
     of dictionary is dataframe of those column. Each dataframe contain a column with a list 
-    unqiue value and a column with a count of each value'''
+    unqiue value and a column with a count of each value
+    '''
 
     #init dictionary
     dict_dataframe_collection = {}

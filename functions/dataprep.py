@@ -2,7 +2,9 @@ import pandas as pd
 import numpy as np
 
 def data_separator (df):
-    '''This function recieve a dataframe that will seperate & convert data into proper category'''
+    '''
+    This function recieve a dataframe that will seperate & convert data into proper category
+    '''
     
     #Init list for checking ordinal and returning list
     ordinal_list = ['day','month','year','time_from_date','date','time']
@@ -36,7 +38,9 @@ def data_separator (df):
     return data_type
 
 def data_conversion(df):
-    '''This function attempt to correct type of data of given dataframe'''
+    '''
+    This function attempt to correct type of data of given dataframe
+    '''
     
      #Attempt to correct data type from object to ordinal     
     try:
@@ -67,7 +71,9 @@ def data_conversion(df):
     return df
     
 def data_combinator(df_type):
-    '''This function receive data type dataframe and will return a combination of column with column type'''
+    '''
+    This function receive data type dataframe and will return a combination of column with column type
+    '''
     
     #init list of dataframe
     row_1_list, row_2_list, col_1_type, col_2_type = ([] for i in range(4))
@@ -88,10 +94,12 @@ def data_combinator(df_type):
     return df_send
 
 def cat_unique_count(df, df_type):
-    '''This function recieve a data type dataframe and original dataframe which return a dictionary that contain
+    '''
+    This function recieve a data type dataframe and original dataframe which return a dictionary that contain
     dataframes of category type column. The key of dictionary is column name and the value
     of dictionary is dataframe of those column. Each dataframe contain a column with a list 
-    unqiue value and a column with a count of each value'''
+    unqiue value and a column with a count of each value
+    '''
 
     dict_dataframe_collection = {}
 
