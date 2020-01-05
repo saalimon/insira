@@ -112,11 +112,6 @@ class Upload(Resource):
         # global df
         global df_obj
         df_obj = functions.Data_prep(data)
-        # df = data_separator(data_conversion(data))
-        # print(df)
-        # global df_obj.data_comb
-        # df_obj.data_comb = data_combinator(df)
-        # print(df_obj.data_comb)
         print(df_obj.data_comb[(df_obj.data_comb.col_1_type == "numeric") & (df_obj.data_comb.col_2_type == "numeric")])
         print("scatter plot length is %d"%len(df_obj.data_comb[(df_obj.data_comb.col_1_type == "numeric") & (df_obj.data_comb.col_2_type == "numeric")].loc[:, ['col_1_name','col_2_name']].values.tolist()))
         # show numeric type columns
