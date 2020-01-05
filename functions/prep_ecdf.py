@@ -15,15 +15,17 @@ def prep_ecdf(data):
     yaxis = np.arange(1, data_length+1)/data_length
     
     for i,v in enumerate(xaxis):
+
+        ecdf_axis = {'xaxis':xaxis, 'yaxis':yaxis}
+        df_ecdf = pd.DataFrame(ecdf_axis)
+
         if i > 0:
-            if v/temp > 1.5:
+            if v/temp > 2.0:
                 if i < data_length/2:
-                    return (1, xaxis, yaxis, (i/data_length)*100, v, 'less_than')
+                    return (1, df_ecdf, (i/data_length)*100, v, 'less_than')
                 else:
-                     return (1, xaxis, yaxis, (1-i/data_length)*100, v, 'more_than')
+                     return (1, df_ecdf, (1-i/data_length)*100, v, 'more_than')
         temp = v
         
-    ecdf_axis = {'xaxis':xaxis, 'yaxis':yaxis}
-    df_ecdf = pd.DataFrame(ecdf_axis) 
     
     return (0, df_ecdf, 50, xaxis[int(data_length/2)], 'less_than')
