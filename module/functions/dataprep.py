@@ -2,18 +2,20 @@ import pandas as pd
 import numpy as np
 import math
 
+# Note: function with _ infront of function name indicated that it is a function for internal use only
+
 class Data_prep:
     def __init__(self, df):
         self.df = df
         self.df = self._data_conversion()
-        self.df_type = self._data_separator()
+        self.data_type = self._data_separator()
         self.data_comb = self._data_combinator()
         self.cat_count = self._cat_unique_count()
         self.na_warn = self._find_na()
         
     def _data_separator (self):
         '''
-        This function recieve a dataframe that will seperate & convert data into proper category
+        This function is used to seperate & convert data into proper category
         '''
         
         #Init list for checking ordinal and returning list
@@ -82,15 +84,15 @@ class Data_prep:
         
     def _data_combinator(self):
         '''
-        This function receive data type dataframe and will return a combination of column with column type
+        This function return a combination of column with column type
         '''
         
         #init list of dataframe
         row_1_list, row_2_list, col_1_type, col_2_type = ([] for i in range(4))
 
         #for sending cross column 
-        for index_outer,row_outer in self.df_type.iterrows():
-            for index_inner,row_inner in self.df_type.iterrows():
+        for index_outer,row_outer in self.data_type.iterrows():
+            for index_inner,row_inner in self.data_type.iterrows():
                 if index_inner > index_outer:
                     row_1_list.append(row_outer['col_name'])
                     row_2_list.append(row_inner['col_name'])
@@ -105,7 +107,7 @@ class Data_prep:
 
     def _cat_unique_count(self):
         '''
-        This function recieve a data type dataframe and original dataframe which return a dictionary that contain
+        This function return a dictionary that contain
         dataframes of category type column. The key of dictionary is column name and the value
         of dictionary is dataframe of those column. Each dataframe contain a column with a list 
         unqiue value and a column with a count of each value
@@ -113,7 +115,7 @@ class Data_prep:
 
         dict_dataframe_collection = {}
 
-        df_send_filter_cat = self.df_type.loc[(self.df_type.col_type == 'category')]
+        df_send_filter_cat = self.data_type.loc[(self.data_type.col_type == 'category')]
         cat_col = [col for col in df_send_filter_cat['col_name']] 
 
         for cat in cat_col:
@@ -125,7 +127,7 @@ class Data_prep:
 
     def _find_na(self):
         '''
-        This function recieve a dataframe and return infrom value that indicate 
+        This function return infrom value that indicate 
         too many NA/NaN values are presented in any columns or not. It also returns
         dataframe of column with high NA value that contains ratio of na if any is existed
         '''
@@ -150,8 +152,9 @@ class Data_prep:
         import pandas as pd
 
     def prep_ecdf(self, col_name):
-        ''' function to plot ecdf taking a column of data as input
-        and return axis & yaxis for ploting graph. Also return percentage & 
+        ''' 
+        This function is used to prepare a ecdf taking a column name as input
+        and return dataframe contain axis & yaxis for ploting graph. Also return percentage & 
         value of data & argument for use in NLG and
         score for selecting graph
         Recommended graph label: title = "ECDF Plot", xlabel = 'Data Values', ylabel = 'Percentage'
@@ -180,7 +183,7 @@ class Data_prep:
     
     def numercial_data_distribution(self, col_name):
         '''
-        This function recieve original dataframe & data type and output a
+        This function recieve a column name and output a
         dataframe of graph skewness of each numerical column in original dataframe
         '''
         
@@ -201,12 +204,10 @@ class Data_prep:
         
         return score, column_skew
 
-    def dominated_category_1(self, col_name):
+    def dominated_category(self, col_name):
         '''
-        This function recieve a dictionary contained count value 
-        of the category type column(from function cat_data_count.py) and 
-        column name. This function will return an boolean indicated anomaly value
-        presented, attribute that dominated, the value of anomaly, percent dominate,
+        This function receive a column name and return an binary value indicated anomaly value
+        presented (1 if true, 0 otherwise), attribute that dominated, the value of anomaly, percent dominate,
         and score that use for selecting graph
         '''
         
@@ -255,3 +256,19 @@ class Data_prep:
     #         print("No abnormalies is detected")
 
         return (score, anomal, attribute, value, percent_dominate)
+    
+    def find_binomal(self, col_name):
+        '''
+        This function is used to detect a binomal distribution presented in data and
+        return a binary value (1 if there is a binomal presented in received column, 0 otherwise)
+        '''
+
+        df_mode = self.df.mode()
+        # df_mode = self.df.mode(numeric_only=True)
+
+        number_of_mode = len(df_mode[col_name].dropna())
+
+        if number_of_mode == 2:
+            return 1
+
+        return 0

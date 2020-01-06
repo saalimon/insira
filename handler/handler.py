@@ -29,7 +29,7 @@ class Data(Resource):
         if args1 == 'distribution':
             # newdata = data.filter([args['arg1']], axis=1)
             distribution = {'Colnames':[],'Values':[],'Descriptions':[]}
-            colname = df_obj.df_type[df_obj.df_type.col_type == "numeric"].col_name.to_list()
+            colname = df_obj.data_type[df_obj.data_type.col_type == "numeric"].col_name.to_list()
             for x in colname:
                 distribution['Colnames'].append(x)
                 distribution_df = df_obj.df.filter([x], axis=1)
@@ -61,14 +61,14 @@ class Data(Resource):
             for a_i in a:
                 print("%s %s %f"%(a_i[0],a_i[1],a[a_i]))
                 heat['Values'].append({'x':a_i[0],'y':a_i[1],'value':a[a_i]})
-            colname = df_obj.df_type[df_obj.df_type.col_type == "numeric"].col_name.to_list()
+            colname = df_obj.data_type[df_obj.data_type.col_type == "numeric"].col_name.to_list()
             for x in colname:
                 heat['Colnames'].append(x)
             heat['Descriptions'].append("This graph show")
             return heat, {'Access-Control-Allow-Origin': '*'}
         elif args1 == 'boxplot':
             boxplot = {'Colnames':[],'Values':[],'Descriptions':[]}
-            colname = df_obj.df_type[df_obj.df_type.col_type == "numeric"].col_name.to_list()
+            colname = df_obj.data_type[df_obj.data_type.col_type == "numeric"].col_name.to_list()
             for x in colname:
                 boxplot['Colnames'].append(x)
                 boxplot_df = df_obj.df.filter([x], axis=1)
@@ -115,7 +115,7 @@ class Upload(Resource):
         print(df_obj.data_comb[(df_obj.data_comb.col_1_type == "numeric") & (df_obj.data_comb.col_2_type == "numeric")])
         print("scatter plot length is %d"%len(df_obj.data_comb[(df_obj.data_comb.col_1_type == "numeric") & (df_obj.data_comb.col_2_type == "numeric")].loc[:, ['col_1_name','col_2_name']].values.tolist()))
         # show numeric type columns
-        print("histogram length is %d"%len(df_obj.df_type[df_obj.df_type.col_type == "numeric"].col_name.to_list()))
+        print("histogram length is %d"%len(df_obj.data_type[df_obj.data_type.col_type == "numeric"].col_name.to_list()))
         data_to_session = df_obj.data_comb.to_dict(orient='records')
         session['data'] = data_to_session
         return "success", {'Access-Control-Allow-Origin': '*'}
