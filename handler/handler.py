@@ -1,3 +1,5 @@
+# !/usr/bin/python
+# coding=utf-8
 from flask import request,jsonify,session,render_template
 from flask_restful import Resource,reqparse
 import numpy as np
@@ -22,7 +24,7 @@ class Data(Resource):
                 distribution_df = data.filter([x], axis=1)
                 distribution_df.columns = ['value']
                 distribution['Values'].append({x:distribution_df.to_dict(orient='records')})
-                distribution['Descriptions'].append({x:"This graph show"})
+                distribution['Descriptions'].append({x:"กราฟนี้แสดง"})
             return distribution, {'Access-Control-Allow-Origin': '*'}
         elif args1 == 'scatter':
             # show correlation between 2 numerical data
@@ -35,7 +37,7 @@ class Data(Resource):
                 temp = temp.to_dict(orient='records')
                 scatter['Colnames'].append(str1)
                 scatter['Values'].append({str1:temp})
-                scatter['Descriptions'].append({str1:"This graph show"})
+                scatter['Descriptions'].append({str1:"กราฟนี้แสดง"})
             return scatter, {'Access-Control-Allow-Origin': '*'}
         elif args1 == 'heatmap':
             # heatmap is not success now will complete within 15 dec 2019
@@ -49,7 +51,7 @@ class Data(Resource):
             colname = df[df.col_type == "numeric"].col_name.to_list()
             for x in colname:
                 heat['Colnames'].append(x)
-            heat['Descriptions'].append("This graph show")
+            heat['Descriptions'].append("กราฟนี้แสดง")
             return heat, {'Access-Control-Allow-Origin': '*'}
         elif args1 == 'boxplot':
             # show data qualtile and outliner of single data
@@ -59,7 +61,7 @@ class Data(Resource):
                 boxplot['Colnames'].append(x)
                 boxplot_df = data.filter([x], axis=1)
                 boxplot['Values'].append({x:boxplot_df[x].to_list()})
-                boxplot['Descriptions'].append({x:"This graph show"}) 
+                boxplot['Descriptions'].append({x:"กราฟนี้แสดง"}) 
             return boxplot, {'Access-Control-Allow-Origin': '*'}
         elif args1 == 'bar_cat':
             temp = cat_unique_count(data,df)
@@ -73,7 +75,7 @@ class Data(Resource):
                 for i in tempT:
                     bar.append({'name':i,'value':tempT[i]})
                 bar_cat['Values'].append({x:bar})
-                bar_cat['Descriptions'].append({x:"This graph show"})
+                bar_cat['Descriptions'].append({x:"กราฟนี้แสดง"})
             return bar_cat, {'Access-Control-Allow-Origin': '*'}
         elif args1 == 'bar_num':
             bar_num = {'Colnames':[],'Values':[],'Descriptions':[]}
