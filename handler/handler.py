@@ -77,6 +77,10 @@ class Data(Resource):
                 bar_cat['Values'].append({x:bar})
                 bar_cat['Descriptions'].append({x:"กราฟนี้แสดง"})
             return bar_cat, {'Access-Control-Allow-Origin': '*'}
+        elif args1 == 'ecdf':
+            ecdf = {'Colnames':[],'Values':[],'Descriptions':[]}
+            
+            return ecdf, {'Access-Control-Allow-Origin': '*'}
         elif args1 == 'bar_num':
             bar_num = {'Colnames':[],'Values':[],'Descriptions':[]}
 

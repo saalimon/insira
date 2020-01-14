@@ -6,7 +6,7 @@ def data_separator (df):
     
     #Init list for checking ordinal and returning list
     ordinal_list = ['day','month','year','time_from_date','date','time']
-    unique_list = ['id','no.','code']
+    unique_list = ['id','no.','code','identifier','num','_no','.no','number','_id','.id','no']
     col_type = [] 
 
     #lower case column name
