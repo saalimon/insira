@@ -43,17 +43,16 @@ class Data(Resource):
             return scatter, {'Access-Control-Allow-Origin': '*'}
 
         elif args1 == 'heatmap':
-            print(df_obj.df.corr())
             heat = df_obj.df.corr()
             a = heat.unstack().to_dict()
             heat = {'Colnames':[],'Values':[],'Descriptions':[]}
             for a_i in a:
-                print("%s %s %f"%(a_i[0],a_i[1],a[a_i]))
                 heat['Values'].append({'x':a_i[0],'y':a_i[1],'value':a[a_i]})
             colname = df_obj.data_type[df_obj.data_type.col_type == "numeric"].col_name.to_list()
             for x in colname:
                 heat['Colnames'].append(x)
             heat['Descriptions'].append("กราฟนี้แสดง")
+
             return heat, {'Access-Control-Allow-Origin': '*'}
         elif args1 == 'boxplot':
             # show data qualtile and outliner of single data
@@ -80,6 +79,15 @@ class Data(Resource):
             return bar_cat, {'Access-Control-Allow-Origin': '*'}
         elif args1 == 'ecdf':
             ecdf = {'Colnames':[],'Values':[],'Descriptions':[]}
+            colname = df_obj.data_type[df_obj.data_type.col_type == "numeric"].col_name.to_list()
+            for x in colname:
+                # print(x)
+                _ecdf = df_obj.prep_ecdf(x)
+                _ecdf = _ecdf[1].to_dict(orient='records')
+                ecdf['Colnames'].append(x)
+                ecdf['Values'].append({x:_ecdf})
+                ecdf['Descriptions'].append({x:"กราฟนี้แสดง"})
+                # print(_ecdf)
             
             return ecdf, {'Access-Control-Allow-Origin': '*'}
         elif args1 == 'bar_num':
