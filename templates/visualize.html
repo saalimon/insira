@@ -30,6 +30,8 @@
     var margin = { top: 30, right: 30, bottom: 30, left: 40 },
         width = 460 - margin.left - margin.right,
         height = 400 - margin.top - margin.bottom;
+    var color1 = '#5DADE2';
+    var color2 = '#69b3a2';
 
     $(document).ready(function () {
         $.ajax({
@@ -109,7 +111,7 @@
                         .attr("transform", function (d) { return "translate(" + x(d.x0) + "," + y(d.length) + ")"; })
                         .attr("width", function (d) { return x(d.x1) - x(d.x0) - 1; })
                         .attr("height", function (d) { return height - y(d.length); })
-                        .style("fill", "#69b3a2")
+                        .style("fill", color1)
                         .on("mouseover", function () { return tooltip[i].style("visibility", "visible"); })
                         .on("mousemove", function () { return tooltip[i].style("top", (event.pageY - 800) + "px").style("left", (event.pageX - 800) + "px"); })
                         .on("mouseout", function () { return tooltip[i].style("visibility", "hidden"); });
@@ -188,7 +190,7 @@
                         .attr("cx", function (d) { return x(d.x); })
                         .attr("cy", function (d) { return y(d.y); })
                         .attr("r", 3)
-                        .style("fill", "#69b3a2")
+                        .style("fill", color1)
 
                     var title = "correlation of " + keys[i]
                     console.log(title);
@@ -267,7 +269,7 @@
                         .attr("y", function (d) { return y(d.value); })
                         .attr("width", x.bandwidth())
                         .attr("height", function (d) { return height - y(d.value); })
-                        .attr("fill", "#69b3a2")
+                        .attr("fill", color1)
                     var title = "barplot of " + keys[i]
                     console.log(title);
                     svg[i].append("text")
@@ -341,7 +343,7 @@
                         .attr("cx", function (d) { return x(d.xaxis); })
                         .attr("cy", function (d) { return y(d.yaxis); })
                         .attr("r", 3)
-                        .style("fill", "#69b3a2")
+                        .style("fill", color1)
 
                     var title = "ecdf of " + keys[i]
                     console.log(title);
@@ -383,7 +385,8 @@
                 // Create a color scale
                 var color = d3.scaleLinear()
                     .domain([-1, 0, 1])
-                    .range(["#B22222", "#fff", "#000080"]);
+                    .range(["#fff",color1]);
+                    // .range(["#B22222", "#fff", "#000080"]);
 
                 // Create a size scale for bubbles on top right. Watch out: must be a rootscale!
                 var size = d3.scaleSqrt()
