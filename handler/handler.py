@@ -90,6 +90,15 @@ class Data(Resource):
                 # print(_ecdf)
             
             return ecdf, {'Access-Control-Allow-Origin': '*'}
+        elif args1 == 'time':
+            time = {'Colnames':[],'Values':[],'Descriptions':[]}
+            print("time")
+            col = df_obj._data_separator()
+            time_col = col[col.col_type == 'ordinal'].col_name.values
+            for name in time_col:
+                print(df_obj.df[name])
+            # select yaxis of date time
+            return time, {'Access-Control-Allow-Origin': '*'}
         elif args1 == 'bar_num':
             bar_num = {'Colnames':[],'Values':[],'Descriptions':[]}
 
