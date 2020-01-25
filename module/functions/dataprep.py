@@ -163,7 +163,7 @@ class Data_prep:
         temp = 0
         data_length = len(self.df[col_name])
         xaxis = np.sort(self.df[col_name])
-        yaxis = np.arange(1, data_length+1)/data_length
+        yaxis = np.arange(1, data_length+1)/float(data_length)
         
         for i,v in enumerate(xaxis):
 
@@ -171,7 +171,7 @@ class Data_prep:
             df_ecdf = pd.DataFrame(ecdf_axis)
 
             if i > 0:
-                if v/temp > 2.0:
+                if v/temp > 1.5:
                     if i < data_length/2:
                         return (1, df_ecdf, (i/data_length)*100, v, 'less_than')
                     else:

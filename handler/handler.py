@@ -83,20 +83,37 @@ class Data(Resource):
             for x in colname:
                 # print(x)
                 _ecdf = df_obj.prep_ecdf(x)
-                _ecdf = _ecdf[1].to_dict(orient='records')
-                ecdf['Colnames'].append(x)
-                ecdf['Values'].append({x:_ecdf})
-                ecdf['Descriptions'].append({x:"กราฟนี้แสดง"})
-                # print(_ecdf)
+                print(_ecdf[0])
+                if _ecdf[0] > 0:
+                    _ecdf = _ecdf[1].to_dict(orient='records')
+                    
+                    ecdf['Colnames'].append(x)
+                    ecdf['Values'].append({x:_ecdf})
+                    ecdf['Descriptions'].append({x:"กราฟนี้แสดง"})
             
             return ecdf, {'Access-Control-Allow-Origin': '*'}
         elif args1 == 'time':
+            # test with supermarket dataset
             time = {'Colnames':[],'Values':[],'Descriptions':[]}
             print("time")
-            col = df_obj._data_separator()
-            time_col = col[col.col_type == 'ordinal'].col_name.values
-            for name in time_col:
-                print(df_obj.df[name])
+            col = df_obj.data_type
+            # create new best solution later 
+            time_col = col[(col.col_name == 'date') |(col.col_name == 'Date') ].col_name.values
+            numeric_col = col[(col.col_type == 'numeric')].col_name.values
+            print(col)
+            print(time_col)
+            for t in time_col:
+                for n in numeric_col:
+                    name = t+','+n
+                    temp = df_obj.df[[t,n]].head(10)
+                    temp.columns = ['x','y']
+                    print(df_obj.df.head(10))
+                    print(temp)
+                    temp = temp.to_dict(orient='records')
+                    time['Colnames'].append(name)
+                    time['Values'].append({name:temp})
+                    time['Descriptions'].append({name:"กราฟนี้แสดง"})
+                    return time, {'Access-Control-Allow-Origin': '*'}
             # select yaxis of date time
             return time, {'Access-Control-Allow-Origin': '*'}
         elif args1 == 'bar_num':
@@ -117,7 +134,9 @@ class Data(Resource):
 # for Upload CSV data
 class Upload(Resource):
     def get(self):
-        return jsonify({'status': 'ok', 'data': df_obj.df.to_dict(orient='split')}), {'Access-Control-Allow-Origin': '*'}
+        print(df_obj.data_type.to_dict(orient='records'))
+        return df_obj.data_type.to_dict(orient='records'), {'Access-Control-Allow-Origin': '*'}
+        # return jsonify({'status': 'ok', 'data': df_obj.df.to_dict(orient='split')}), {'Access-Control-Allow-Origin': '*'}
     def post(self):
         file = request.files['file']
         # global data

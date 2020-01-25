@@ -22,14 +22,19 @@
 <div id="ecdf"></div>
 <h4>- correlogram --</h4>
 <div id="heatmap"></div>
+<h4>- trend --</h4>
+<div id="time"></div>
 <!-- <h4>- TEST --</h4> -->
 <!-- <div id="test"></div> -->
 
 
 <script>
-    var margin = { top: 30, right: 30, bottom: 30, left: 40 },
-        width = 460 - margin.left - margin.right,
-        height = 400 - margin.top - margin.bottom;
+    // var margin = { top: 30, right: 30, bottom: 30, left: 40 },
+    //     width = 460 - margin.left - margin.right,
+    //     height = 400 - margin.top - margin.bottom;
+    var margin = { top: 20, right: 20, bottom: 50, left: 70 },
+        width = 960 - margin.left - margin.right,
+        height = 500 - margin.top - margin.bottom;
     var color1 = '#5DADE2';
     var color2 = '#69b3a2';
 
@@ -155,6 +160,7 @@
                 $('#correlation').append(toAdd);
                 var svg = [];
                 for (var i = 0; i < len; i++) {
+                    var label = keys[i].split(",");
                     var datatemp = "#correlation_data" + i;
                     // append the svg object to the body of the page
                     svg[i] = d3.select(datatemp)
@@ -174,6 +180,14 @@
                     svg[i].append("g")
                         .attr("transform", "translate(0," + height + ")")
                         .call(d3.axisBottom(x));
+                    // text label for the x axis
+                    svg[i].append("text")
+                        .attr("transform",
+                            "translate(" + (width / 2) + " ," +
+                            (height + margin.top + 20) + ")")
+                        .style("text-anchor", "middle")
+                        .text(label[0]);
+
                     var max_y = d3.max(data[i], function (d) { return +d.y })
                     var min_y = d3.min(data[i], function (d) { return +d.y })
                     // Add Y axis
@@ -191,9 +205,17 @@
                         .attr("cy", function (d) { return y(d.y); })
                         .attr("r", 3)
                         .style("fill", color1)
+                    // text label for the y axis
+                    svg[i].append("text")
+                        .attr("transform", "rotate(-90)")
+                        .attr("y", 0 - margin.left)
+                        .attr("x", 0 - (height / 2))
+                        .attr("dy", "1em")
+                        .style("text-anchor", "middle")
+                        .text(label[1]);
 
                     var title = "correlation of " + keys[i]
-                    console.log(title);
+                    // console.log(title);
                     svg[i].append("text")
                         .attr("x", (width / 2))
                         .attr("y", 0 - (margin.top / 2))
@@ -240,10 +262,13 @@
                         .attr("transform",
                             "translate(" + margin.left + "," + margin.top + ")");
                     // X axis
-                    var x = d3.scaleBand()
-                        .range([0, width])
-                        .domain(data[i].map(function (d) { return d.name; }))
-                        .padding(0.2);
+                    var x = d3.scaleTime()
+                        .domain(d3.extent(data[i], function (d) { return d.name; }))
+                        .range([0, width]);
+                    // var x = d3.scaleBand()
+                    //     .range([0, width])
+                    //     .domain(data[i].map(function (d) { return d.name; }))
+                    //     .padding(0.2);
                     console.log()
                     svg[i].append("g")
                         .attr("transform", "translate(0," + height + ")")
@@ -287,7 +312,6 @@
             type: 'GET',
             dataType: 'json',
             success: function (res) {
-
                 var temp = res['Values']
                 var data = []
                 var keys = []
@@ -385,8 +409,8 @@
                 // Create a color scale
                 var color = d3.scaleLinear()
                     .domain([-1, 0, 1])
-                    .range(["#fff",color1]);
-                    // .range(["#B22222", "#fff", "#000080"]);
+                    // .range(["#fff", color1]);
+                .range(["#B22222", "#fff", "#000080"]);
 
                 // Create a size scale for bubbles on top right. Watch out: must be a rootscale!
                 var size = d3.scaleSqrt()
@@ -457,6 +481,83 @@
                         }
                     })
                     .style("opacity", 0.8)
+            }
+        });
+        $.ajax({
+            url: '/data?arg1=time',
+            type: 'GET',
+            dataType: 'json',
+            success: function (res) {
+                var temp = res['Values'];
+                var data = [];
+                var keys = [];
+                const len = temp.length;
+                console.log("length ", len);
+                var parseDate = d3.timeParse("%d/%m/%Y");
+                for (var i = 0; i < len; i++) {
+                    keys[i] = Object.keys(temp[i])[0];
+                    data[i] = temp[i][keys[i]]
+                    data[i].forEach(function (d) {
+                        // console.log("ee",d['x'],parseDate(d['x']));
+                        d['x'] = parseDate(d['x']);
+                    });
+                    // console.log(parseDate("02/01/2015"));
+                    if (i == 0)
+                        console.log("time", data[i]);
+                }
+                
+                var toAdd = document.createDocumentFragment();
+                for (var i = 0; i < len; i++) {
+                    var newDiv = document.createElement('div');
+                    newDiv.id = 'time_data' + i;
+                    newDiv.className = 'dataviz';
+                    toAdd.appendChild(newDiv);
+                }
+                $('#time').append(toAdd);
+                var svg = [];
+                for (var i = 0; i < len; i++) {
+                    var datatemp = "#time_data" + i;
+                    svg[i] = d3.select(datatemp)
+                        .append("svg")
+                        .attr("width", width + margin.left + margin.right)
+                        .attr("height", height + margin.top + margin.bottom)
+                        .append("g")
+                        .attr("transform",
+                            "translate(" + margin.left + "," + margin.top + ")");
+                    // Add X axis --> it is a date format
+                    var x = d3.scaleTime()
+                        .domain(d3.extent(data[i], function (d) { return d.x; }))
+                        .range([0, width]);
+                    svg[i].append("g")
+                        .attr("transform", "translate(0," + height + ")")
+                        .call(d3.axisBottom(x));
+                    // Add Y axis
+                    var y = d3.scaleLinear()
+                        .domain([0, d3.max(data[i], function (d) { return +d.y; })])
+                        .range([height, 0]);
+                    svg[i].append("g")
+                        .call(d3.axisLeft(y));
+
+                    // Add the line
+                    svg[i].append("path")
+                        .datum(data[i])
+                        .attr("fill", "none")
+                        .attr("stroke", "steelblue")
+                        .attr("stroke-width", 1.5)
+                        .attr("d", d3.line()
+                            .x(function (d) { return x(d.x) })
+                            .y(function (d) { return y(d.y) })
+                        )
+                    var title = "trend of " + keys[i]
+                    console.log(title);
+                    svg[i].append("text")
+                        .attr("x", (width / 2))
+                        .attr("y", 0 - (margin.top / 2))
+                        .attr("text-anchor", "middle")
+                        .style("font-size", "16px")
+                        .style("text-decoration", "underline")
+                        .text(title);
+                }
             }
         });
 
