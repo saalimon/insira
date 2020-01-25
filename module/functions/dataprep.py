@@ -12,11 +12,11 @@ class Data_prep:
         self.data_comb = self._data_combinator()
         self.cat_count = self._cat_unique_count()
         self.na_warn = self._find_na()
-        
-    def _data_separator (self):
-        '''
+
+    def _data_separator(self):
+        """
         This function is used to seperate & convert data into proper category
-        '''
+        """
         
         #Init list for checking ordinal and returning list
         ordinal_list = ['day','month','year','time_from_date','date','time']
@@ -50,9 +50,9 @@ class Data_prep:
         return data_type
 
     def _data_conversion(self):
-        '''
+        """
         This function attempt to correct type of data of given dataframe
-        '''
+        """
         
         #Attempt to correct data type from object to ordinal     
         try:
@@ -83,9 +83,9 @@ class Data_prep:
         return self.df
         
     def _data_combinator(self):
-        '''
+        """
         This function return a combination of column with column type
-        '''
+        """
         
         #init list of dataframe
         row_1_list, row_2_list, col_1_type, col_2_type = ([] for i in range(4))
@@ -106,12 +106,12 @@ class Data_prep:
         return df_send
 
     def _cat_unique_count(self):
-        '''
+        """
         This function return a dictionary that contain
         dataframes of category type column. The key of dictionary is column name and the value
         of dictionary is dataframe of those column. Each dataframe contain a column with a list 
         unqiue value and a column with a count of each value
-        '''
+        """
 
         dict_dataframe_collection = {}
 
@@ -126,11 +126,11 @@ class Data_prep:
         return dict_dataframe_collection
 
     def _find_na(self):
-        '''
+        """
         This function return infrom value that indicate 
         too many NA/NaN values are presented in any columns or not. It also returns
         dataframe of column with high NA value that contains ratio of na if any is existed
-        '''
+        """
         na = self.df.isna().sum() 
         inform = 0
         col_index, na_ratio = ([] for i in range(2))
@@ -141,7 +141,13 @@ class Data_prep:
                 col_index.append(index)
                 na_ratio.append(value/data_length)
                 inform = 1
-                
+            elif value/data_length > 0.90:
+                self.df.drop([index], axis=1)
+                print("{0} has over 80% of null value contained, therefore it has to be dropped".format(index))
+            elif len(self.df[index]) <= 1:
+                self.df.drop([index], axis=1)
+                print("{0} has only 1 or less value contained, therefore it has to be dropped".format(index))
+
         if inform == 1:
             na_list = {'col_name':col_index, 'na_ratio': na_ratio}
             df_na = pd.DataFrame(na_list)
@@ -149,16 +155,14 @@ class Data_prep:
 
         return inform, None
 
-        import pandas as pd
-
     def prep_ecdf(self, col_name):
-        ''' 
+        """ 
         This function is used to prepare a ecdf taking a column name as input
         and return dataframe contain axis & yaxis for ploting graph. Also return percentage & 
         value of data & argument for use in NLG and
         score for selecting graph
         Recommended graph label: title = "ECDF Plot", xlabel = 'Data Values', ylabel = 'Percentage'
-        '''
+        """
         
         temp = 0
         data_length = len(self.df[col_name])
@@ -173,19 +177,19 @@ class Data_prep:
             if i > 0:
                 if v/temp > 1.5:
                     if i < data_length/2:
-                        return (1, df_ecdf, (i/data_length)*100, v, 'less_than')
+                        return (1, df_ecdf, (i/data_length)*100, v, 'น้อยกว่า')
                     else:
-                        return (1, df_ecdf, (1-i/data_length)*100, v, 'more_than')
+                        return (1, df_ecdf, (1-i/data_length)*100, v, 'มากกว่า')
             temp = v
             
         
-        return (0, df_ecdf, 50, xaxis[int(data_length/2)], 'less_than')
+        return (0, df_ecdf, 50, xaxis[int(data_length/2)], 'น้อยกว่า')
     
-    def numercial_data_distribution(self, col_name):
-        '''
+    def _numercial_data_distribution(self, col_name):
+        """
         This function recieve a column name and output a
         dataframe of graph skewness of each numerical column in original dataframe
-        '''
+        """
         
         score = 0
         column_skew = []
@@ -197,24 +201,23 @@ class Data_prep:
             column_skew = 'Symmetric'
         elif mean > med:
             column_skew = 'Right skewed'
+            score = 1
         elif med > mean:
             column_skew = 'Left skewed'
+            score = 1
         else:
             column_skew = 'fail to process'
         
         return score, column_skew
 
-    def dominated_category(self, col_name):
-        '''
-        This function receive a column name and return an binary value indicated anomaly value
-        presented (1 if true, 0 otherwise), attribute that dominated, the value of anomaly, percent dominate,
+    def _data_ratio(self, col_name):
+        """
+        This function receive a column name and return an argument for descripe, 
+        attribute that dominated, the value of anomaly, percent dominate,
         and score that use for selecting graph
-        '''
+        """
         
         score = 0
-        
-        #init list
-        anomal = []
         
         #list for holding value of current column
         temp_value = []
@@ -227,6 +230,7 @@ class Data_prep:
         member = len(temp_value)         
         max_value = np.max(temp_value)
         threshold = 0
+        balanced_threshold = 0
 
         for i in temp_value:
             if i != max_value:
@@ -235,6 +239,9 @@ class Data_prep:
                 if i/max_value < 0.35:
                     #increase the number of normal value compared to anomaly
                     threshold += 1
+                #if current value is approximated to max value, then add perfect data threshold
+                elif i/max_value > 0.90:
+                    balanced_threshold += 1
 
             #for store max value purpose
             else:
@@ -242,26 +249,35 @@ class Data_prep:
 
         #if overall nomal value is equal to number of attribute exclude max value then that max value is certainly an anomaly
         if threshold == member-1:
-            anomal = 1
+            arg = "fragmented data"
             attribute = max_attribute
             value = max_value
             percent_dominate = (max_value/sum(temp_value))
             score = 1
     #         print(str(max_col)+" in "+str(col_name)+" is anomalies")
+
+        #if overall nomal value is equal to number of attribute exclude max value then this data is perfectly balanced
+        elif balanced_threshold == member-1:
+            arg = "balanced data"
+            attribute = None
+            value = None
+            percent_dominate = None
+            score = 1
+        
         else:
-            anomal = 0
+            arg = None
             attribute = None
             value = None
             percent_dominate = None
     #         print("No abnormalies is detected")
 
-        return (score, anomal, attribute, value, percent_dominate)
-    
-    def find_binomal(self, col_name):
-        '''
+        return score, arg, attribute, value, percent_dominate
+        
+    def _find_multimodal(self, col_name):
+        """
         This function is used to detect a binomal distribution presented in data and
         return a binary value (1 if there is a binomal presented in received column, 0 otherwise)
-        '''
+        """
 
         df_mode = self.df.mode()
         # df_mode = self.df.mode(numeric_only=True)
@@ -269,6 +285,199 @@ class Data_prep:
         number_of_mode = len(df_mode[col_name].dropna())
 
         if number_of_mode == 2:
-            return 1
+            return 1, "bimodal"
+        elif number_of_mode == 3:
+            return 1, "trimodal"   
+             
+        return 0, None
+    
+    def _find_corr(self, df_corr, col_1, col_2):
+        """
+        This function is use to select interesting correlation found in data
+        """
 
-        return 0
+        corr_type_mod = ""
+        corr_type_strong = ""
+        
+        for i,r in df_corr.iterrows():
+            for index_i, index_v in enumerate(r.values):
+                #if current row is interested column
+                if i == col_1 and r.index[index_i] == col_2:
+                    #if it is not its own corr value
+                    if r.index[index_i] != i:
+
+                        #for positive correlation
+                        if index_v > 0:
+                            if index_v > 0.6 and index_v < 0.8:
+                                    corr_type_mod = "moderate postive"
+                                    break
+
+                            elif index_v > 0.8:
+                                    corr_type_strong = "strong postive"
+                                    break
+
+                        #for negative correlation
+                        elif index_v < 0:
+                            if index_v < -0.6 and index_v > -0.8:
+                                    corr_type_mod = "moderate negative"
+                                    break
+
+                            elif index_v < -0.8:
+                                    corr_type_strong = "strong negative"
+                                    break
+
+
+        #prioritize strong correlation                  
+        if len(corr_type_strong) != 0:
+    #         if len(moderate) != 0:
+    #             return 2, strong+moderate
+    #         else:
+    #             return 2, strong
+            return 2, corr_type_strong
+                
+        else:
+            if len(corr_type_mod) != 0:
+                return 1, corr_type_mod
+            else:
+                return 0, None
+    
+    def _numerical_test(self, col, g_type):
+        if g_type == 'ecdf':
+            res_ecdf =  self.prep_ecdf(col)
+            score = res_ecdf[0]
+            if score == 1:
+                return col, res_ecdf[2:5]
+                
+        elif g_type == 'histogram':
+            score_his, skew = self._numercial_data_distribution(col)
+            score_multi, dis_type = self._find_multimodal(col)
+            score = score_his+score_multi
+            if score >= 1:
+    #             selected_histogram.append(col)
+                return col, skew, dis_type
+        
+        return None
+
+    def _categorical_test(self, col, g_type):
+        if g_type == "bar":
+            res_ratio = self._data_ratio(col)
+            score = res_ratio[0]
+    #         score_ratio, arg, attribute, value, percent_dominate = self._data_ratio(col)
+            if score == 1:
+                return col, res_ratio[1:5]
+        return None
+
+    def _num_num_test(self, col_1, col_2, g_type):
+        if g_type == 'scatter':
+            df_corr = self.df.corr(method ='pearson')
+            score, corr_type = self._find_corr(df_corr, col_1, col_2)
+            if score >= 1:
+    #             selected_scatter.append((col_1, col_2))
+    #             corr_list.append(corr_type)
+    #             flattened_list = [y for x in corr_list for y in x]
+
+    #             corr_temp = {'col_name':selected_scatter, 'corr_type':flattened_list}
+    #             df_send = pd.DataFrame(corr_temp)
+                return col_1, col_2, corr_type
+
+        return None
+
+    def _num_cat_test(self, col_1, col_2, g_type):
+        #For future release
+        return None
+
+    def _cat_cat_test(self, col_1, col_2, g_type):
+        #For future release
+        return None
+
+    def graph_selector(self, g_type):
+        """
+        This function is used to select interesting graph
+        """
+        
+        single_col = ['histogram','bar','ecdf','boxplot']
+        double_col = ['scatter']
+        df_return = None
+        
+        #histogram
+        skew = []
+        dis_type = []
+        
+        #general
+        col_name = []
+        argument = []
+        value = []
+        
+        #ecdf_graph
+        break_percent = []
+        
+        #bar
+        anomal_attribute = []
+        percent_dominate = []
+        
+        #scatter 
+        col_1_name, col_2_name, corr_type = ([] for i in range(3))
+        
+        type_prefer = ['category','numeric']
+        df_type_filter = self.data_type[self.data_type.col_type.isin(type_prefer)]
+        df_combine_filter = self.data_comb[(self.data_comb.col_1_type.isin(type_prefer)) & (self.data_comb.col_2_type.isin(type_prefer))]
+        
+    #     num_list = numeric_only['col_name'].tolist()
+    #     new_df_numeric = self.df[num_list] 
+
+        switcher = {
+            'numeric': self._numerical_test,
+            'category': self._categorical_test,
+            ('numeric','numeric'): self._num_num_test,
+            ('numeric','category'): self._num_cat_test,
+            ('category','numeric'): self._num_cat_test,
+            ('category','category'): self._cat_cat_test,
+        }
+
+        if g_type in single_col:
+            for i,r in df_type_filter.iterrows():
+                func_single = switcher.get(r.values[1], lambda: "Error: Invalid column type presented")
+                result_single = func_single(r.values[0], g_type)
+                if result_single != None:
+                    if len(result_single) == 3:
+                        if g_type == "histogram":
+                            col_name.append(result_single[0])
+                            skew.append(result_single[1])
+                            dis_type.append(result_single[2])
+                            data_return = {'col_name':col_name, 'skew':skew, 'dis_type': dis_type}
+                            df_return = pd.DataFrame(data_return)
+                            
+                    if len(result_single) == 2:
+                        if g_type == "ecdf":
+                            col_name.append(result_single[0])
+                            break_percent.append(result_single[1][0])
+                            value.append(result_single[1][1])
+                            argument.append(result_single[1][2])
+                            data_return = {'col_name':col_name, 'break_percent':break_percent, 'value': value, 'argument': argument}
+                            df_return = pd.DataFrame(data_return)
+                            
+                        elif g_type == "bar":
+                            col_name.append(result_single[0])
+                            argument.append(result_single[1][0])
+                            anomal_attribute.append(result_single[1][1])
+                            value.append(result_single[1][2])
+                            percent_dominate.append(result_single[1][3])
+                            data_return = {'col_name':col_name, 'argument':argument, 'anomal_attribute': anomal_attribute,
+                                        'anomal_value': value, 'percent_dominate': percent_dominate}
+                            df_return = pd.DataFrame(data_return)
+
+        elif g_type in double_col:
+            for i,r in df_combine_filter.iterrows():
+                func_double = switcher.get((r.values[2],r.values[3]), lambda: "Error: Invalid column type presented")
+                result_double = func_double(r.values[0], r.values[1], g_type)
+                if result_double != None:
+                    if len(result_double) == 3:
+                        if g_type == "scatter":
+                            col_1_name.append(result_double[0])
+                            col_2_name.append(result_double[1])
+                            corr_type.append(result_double[2])
+                            data_return = {'col_1_name':col_1_name, 'col_2_name':col_2_name, 'corr_type': corr_type}
+                            df_return = pd.DataFrame(data_return)
+
+                            
+        return df_return
