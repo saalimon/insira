@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+<script src="https://d3js.org/d3.v4.js"></script>
+
+<head>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+</head>
+
+<body>
+    <table id="excelDataTable" border="1">
+    </table>
+    <form class="login">
+        <label for="_user_name">username:</label>
+        <input type="text" id="_user_name" name="user[name]" value="dev.pus" />
+        <label for="_user_pass">password:</label>
+        <input type="password" id="_user_pass" name="user[pass]" value="1234" />
+        <button type="submit">login</button>
+    </form>
+    <button type="button" id="click">Click Me!</button>
+
+</body>
+
+<script>
+    var result =[]
+    $(document).ready(function () {
+        $.ajax({
+            url: '/upload',
+            type: 'GET',
+            dataType: 'json',
+            success: function (res) {
+                console.log(res);
+                result = res;
+                console.log('res',res);
+                var columns = addAllColumnHeaders(result);
+                for (var i = 0; i<result.length; i++){
+                    var colname = result[i][columns[0]];
+                    var coltype = result[i][columns[1]];
+                    console.log(colname+" "+coltype);
+                }
+                result[4][columns[1]] = 'fuck';
+                console.log('result',result);
+
+                // buildHtmlTable('#excelDataTable', res);
+                // for (var i = 0; i < res.length; i++) {
+                //     let id = 'sel' + i;
+                //     let element = document.getElementById(id);
+                //     element.value = res[i].col_type;
+                // }
+
+            }
+        });
+    });
+    $("#click").click(function () {
+        console.log(JSON.stringify($('form').serializeObject()));
+        // console.log(form);
+    });
+    // Builds the HTML Table out of myList.
+    function buildHtmlTable(selector, myList) {
+        var columns = addAllColumnHeaders(myList, selector);
+
+        for (var i = 0; i < myList.length; i++) {
+            var row$ = $('<tr/>');
+            for (var colIndex = 0; colIndex < columns.length + 1; colIndex++) {
+                var cellValue = myList[i][columns[colIndex]];
+                if (cellValue == null) cellValue = "";
+                console.log(colIndex, cellValue);
+                if (colIndex == 0) row$.append($('<td/>').html(cellValue));
+                else if (colIndex == 1) {
+                    var l = '<td class="dropdown">' +
+                        '<form action="" name="FILTER">' +
+                        '<select name="filter_for" id=' + '"sel' + i + '"' + '>' +
+                        '<option value="unique">unique</option>' +
+                        '<option value="ordinal">ordinal</option>' +
+                        '<option value="numeric">numeric</option>' +
+                        '<option value="category">category</option>' +
+                        '<option value="date">date</option>' +
+                        '</select>' +
+                        '</form>' +
+                        '</td>'
+                    row$.append(l);
+                    // element.value = cellValue;
+                }
+                else {
+                    var l = '<td>' +
+                        '<form action="" name="FILTER">' +
+                        '<input type="checkbox" name="target" value="' + myList[i][columns[0]] + '" />' +
+                        '</form>' +
+                        '</td>'
+                    row$.append(l);
+                }
+            }
+            $(selector).append(row$);
+        }
+    }
+
+    function addAllColumnHeaders(myList) {
+        var columnSet = [];
+        // var headerTr$ = $('<tr/>');
+
+        for (var i = 0; i < myList.length; i++) {
+            var rowHash = myList[i];
+            for (var key in rowHash) {
+                if ($.inArray(key, columnSet) == -1) {
+                    columnSet.push(key);
+                    // headerTr$.append($('<th/>').html(key));
+                }
+            }
+        }
+        // headerTr$.append($('<th/>').html('target'));
+        // $(selector).append(headerTr$);
+
+        return columnSet;
+    }
+</script>
+
+</html>

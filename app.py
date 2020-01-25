@@ -41,6 +41,9 @@ def d3_4():
 def d3_5():
     # d3_5 is boxplot of single numerical data
     return render_template('d3_5.html')
+@app.route('/data_type')
+def data_type():
+    return render_template('table.html')
 
 api.add_resource(Upload, '/upload')
 api.add_resource(Data, '/data')
