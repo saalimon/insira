@@ -5,8 +5,9 @@ import math
 # Note: function with _ infront of function name indicated that it is a function for internal use only
 
 class Data_prep:
-    def __init__(self, df):
+    def __init__(self, df, target=None):
         self.df = df
+        self.target = target
         self.df = self._data_conversion()
         self.data_type = self._data_separator()
         self.data_comb = self._data_combinator()
@@ -190,25 +191,41 @@ class Data_prep:
         This function recieve a column name and output a
         dataframe of graph skewness of each numerical column in original dataframe
         """
-        
+
+        uniform_count = 0
         score = 0
-        column_skew = []
-        
+        column_dis = []
         mean = self.df[col_name].mean()
         med = self.df[col_name].median()
 
-        if math.isclose(mean, med, rel_tol=1e-1):
-            column_skew = 'Symmetric'
+        #for checking uniform distribution
+        bins = int(math.sqrt(len(self.df[col_name])))
+        counts, _ = np.histogram(self.df[col_name], bins=bins)
+        for i,v in enumerate(counts):
+            if i == 0:
+                temp = v
+            else:
+                if math.isclose(v, temp ,rel_tol=5e-2):
+                    uniform_count += 1
+
+        if len(counts[counts != 0]) == 2:
+            column_dis = 'Bernoulli'
+            score = 1
+        elif uniform_count == len(counts)-1:
+            column_dis = 'Uniform'
+            score = 1
+        elif math.isclose(mean, med, rel_tol=1e-1):
+            column_dis = 'Normal symmetric'
         elif mean > med:
-            column_skew = 'Right skewed'
+            column_dis = 'Normal right skewed'
             score = 1
         elif med > mean:
-            column_skew = 'Left skewed'
+            column_dis = 'Normal left skewed'
             score = 1
         else:
-            column_skew = 'fail to process'
+            column_dis = 'fail to process'
         
-        return score, column_skew
+        return score, column_dis
 
     def _data_ratio(self, col_name):
         """
@@ -298,6 +315,7 @@ class Data_prep:
 
         corr_type_mod = ""
         corr_type_strong = ""
+        corr_target = ""
         
         for i,r in df_corr.iterrows():
             for index_i, index_v in enumerate(r.values):
@@ -305,26 +323,82 @@ class Data_prep:
                 if i == col_1 and r.index[index_i] == col_2:
                     #if it is not its own corr value
                     if r.index[index_i] != i:
+                        #with target
+                        if self.target != None:
+                            #current interest is target
+                            if self.target == i:
+                                #for positive correlation
+                                if index_v > 0:
+                                    if index_v > 0.6 and index_v < 0.8:
+                                            corr_type_mod = "moderate postive"
+                                            corr_target = "correlate with target"
+                                            break
 
-                        #for positive correlation
-                        if index_v > 0:
-                            if index_v > 0.6 and index_v < 0.8:
-                                    corr_type_mod = "moderate postive"
-                                    break
+                                    elif index_v > 0.8:
+                                            corr_type_strong = "strong postive"
+                                            corr_target = "correlate with target"
+                                            break
 
-                            elif index_v > 0.8:
-                                    corr_type_strong = "strong postive"
-                                    break
+                                #for negative correlation
+                                elif index_v < 0:
+                                    if index_v < -0.6 and index_v > -0.8:
+                                            corr_type_mod = "moderate negative"
+                                            corr_target = "correlate with target"
+                                            break
 
-                        #for negative correlation
-                        elif index_v < 0:
-                            if index_v < -0.6 and index_v > -0.8:
-                                    corr_type_mod = "moderate negative"
-                                    break
+                                    elif index_v < -0.8:
+                                            corr_type_strong = "strong negative"
+                                            corr_target = "correlate with target"
+                                            break
+                            else:
+                                #for positive correlation
+                                if index_v > 0:
+                                    if index_v > 0.6 and index_v < 0.8:
+                                            corr_type_mod = "moderate postive"
+                                            corr_target = "correlate with each other"
+                                            break
 
-                            elif index_v < -0.8:
-                                    corr_type_strong = "strong negative"
-                                    break
+                                    elif index_v > 0.8:
+                                            corr_type_strong = "strong postive"
+                                            corr_target = "correlate with each other"
+                                            break
+
+                                #for negative correlation
+                                elif index_v < 0:
+                                    if index_v < -0.6 and index_v > -0.8:
+                                            corr_type_mod = "moderate negative"
+                                            corr_target = "correlate with each other"
+                                            break
+
+                                    elif index_v < -0.8:
+                                            corr_type_strong = "strong negative"
+                                            corr_target = "correlate with each other"
+                                            break
+                        #No target
+                        else:
+                            #for positive correlation
+                            if index_v > 0:
+                                if index_v > 0.6 and index_v < 0.8:
+                                        corr_type_mod = "moderate postive"
+                                        corr_target = None
+                                        break
+
+                                elif index_v > 0.8:
+                                        corr_type_strong = "strong postive"
+                                        corr_target = None
+                                        break
+
+                            #for negative correlation
+                            elif index_v < 0:
+                                if index_v < -0.6 and index_v > -0.8:
+                                        corr_type_mod = "moderate negative"
+                                        corr_target = None
+                                        break
+
+                                elif index_v < -0.8:
+                                        corr_type_strong = "strong negative"
+                                        corr_target = None
+                                        break
 
 
         #prioritize strong correlation                  
@@ -333,13 +407,45 @@ class Data_prep:
     #             return 2, strong+moderate
     #         else:
     #             return 2, strong
-            return 2, corr_type_strong
+            return 2, corr_type_strong, corr_target
                 
         else:
             if len(corr_type_mod) != 0:
-                return 1, corr_type_mod
+                return 1, corr_type_mod, corr_target
             else:
-                return 0, None
+                return 0, None, None
+
+    def _find_outlier_box(self, col):
+    
+        score = 0
+        argument = None
+        Q1 = self.df[col].quantile(.25)
+        Q3 = self.df[col].quantile(.75)
+        IQR = Q3 -Q1
+        data_length = len(self.df[col])
+        
+        exceed_lower = len(self.df[col][((self.df[col] < (Q1 - 1.5 * IQR)))])
+        exceed_upper = len(self.df[col][((self.df[col] > (Q3 + 1.5 * IQR)))])
+        total = exceed_lower+exceed_upper
+        percentage = total/data_length
+
+        if total/data_length > 0.02 and total/data_length < 0.06:
+            argument = "น้อย"
+            score = 1
+        elif total/data_length > 0.06 and total/data_length < 0.10:
+            argument = "ปานหลาง"
+            score = 2
+        elif total/data_length > 0.10:
+            argument = "สูง"
+            score = 3
+        else:
+            exceed_lower = None
+            exceed_upper = None
+            total = None
+            argument = None
+            percentage = None
+        
+        return score, exceed_lower, exceed_upper, total, percentage, argument
     
     def _numerical_test(self, col, g_type):
         if g_type == 'ecdf':
@@ -349,13 +455,19 @@ class Data_prep:
                 return col, res_ecdf[2:5]
                 
         elif g_type == 'histogram':
-            score_his, skew = self._numercial_data_distribution(col)
-            score_multi, dis_type = self._find_multimodal(col)
+            score_his, dis_type = self._numercial_data_distribution(col)
+            score_multi, mode_type = self._find_multimodal(col)
             score = score_his+score_multi
             if score >= 1:
     #             selected_histogram.append(col)
-                return col, skew, dis_type
-        
+                return col, dis_type, mode_type
+
+        elif g_type == 'box':
+            res_box = self._find_outlier_box(col)
+            score = res_box[0]
+            if score >= 1:
+                return col, res_box[1:6]
+
         return None
 
     def _categorical_test(self, col, g_type):
@@ -370,7 +482,7 @@ class Data_prep:
     def _num_num_test(self, col_1, col_2, g_type):
         if g_type == 'scatter':
             df_corr = self.df.corr(method ='pearson')
-            score, corr_type = self._find_corr(df_corr, col_1, col_2)
+            score, corr_type, corr_target = self._find_corr(df_corr, col_1, col_2)
             if score >= 1:
     #             selected_scatter.append((col_1, col_2))
     #             corr_list.append(corr_type)
@@ -378,7 +490,7 @@ class Data_prep:
 
     #             corr_temp = {'col_name':selected_scatter, 'corr_type':flattened_list}
     #             df_send = pd.DataFrame(corr_temp)
-                return col_1, col_2, corr_type
+                return col_1, col_2, corr_type, corr_target
 
         return None
 
@@ -395,13 +507,13 @@ class Data_prep:
         This function is used to select interesting graph
         """
         
-        single_col = ['histogram','bar','ecdf','boxplot']
+        single_col = ['histogram','bar','ecdf','box']
         double_col = ['scatter']
         df_return = None
         
         #histogram
-        skew = []
         dis_type = []
+        mode_type = []
         
         #general
         col_name = []
@@ -411,12 +523,18 @@ class Data_prep:
         #ecdf_graph
         break_percent = []
         
+        #box
+        exceed_lower = []
+        exceed_upper = []
+        total = []
+        outlier_percent = []
+
         #bar
         anomal_attribute = []
         percent_dominate = []
         
         #scatter 
-        col_1_name, col_2_name, corr_type = ([] for i in range(3))
+        col_1_name, col_2_name, corr_type, corr_target = ([] for i in range(4))
         
         type_prefer = ['category','numeric']
         df_type_filter = self.data_type[self.data_type.col_type.isin(type_prefer)]
@@ -439,44 +557,55 @@ class Data_prep:
                 func_single = switcher.get(r.values[1], lambda: "Error: Invalid column type presented")
                 result_single = func_single(r.values[0], g_type)
                 if result_single != None:
-                    if len(result_single) == 3:
-                        if g_type == "histogram":
-                            col_name.append(result_single[0])
-                            skew.append(result_single[1])
-                            dis_type.append(result_single[2])
-                            data_return = {'col_name':col_name, 'skew':skew, 'dis_type': dis_type}
-                            df_return = pd.DataFrame(data_return)
+                    if g_type == "histogram":
+                        col_name.append(result_single[0])
+                        dis_type.append(result_single[1])
+                        mode_type.append(result_single[2])
+                        data_return = {'col_name':col_name, 'dis_type':dis_type, 'mode_type': mode_type}
+                        df_return = pd.DataFrame(data_return)
                             
-                    if len(result_single) == 2:
-                        if g_type == "ecdf":
-                            col_name.append(result_single[0])
-                            break_percent.append(result_single[1][0])
-                            value.append(result_single[1][1])
-                            argument.append(result_single[1][2])
-                            data_return = {'col_name':col_name, 'break_percent':break_percent, 'value': value, 'argument': argument}
-                            df_return = pd.DataFrame(data_return)
-                            
-                        elif g_type == "bar":
-                            col_name.append(result_single[0])
-                            argument.append(result_single[1][0])
-                            anomal_attribute.append(result_single[1][1])
-                            value.append(result_single[1][2])
-                            percent_dominate.append(result_single[1][3])
-                            data_return = {'col_name':col_name, 'argument':argument, 'anomal_attribute': anomal_attribute,
-                                        'anomal_value': value, 'percent_dominate': percent_dominate}
-                            df_return = pd.DataFrame(data_return)
+                    if g_type == "ecdf":
+                        col_name.append(result_single[0])
+                        break_percent.append(result_single[1][0])
+                        value.append(result_single[1][1])
+                        argument.append(result_single[1][2])
+                        data_return = {'col_name':col_name, 'break_percent':break_percent, 'value': value, 'argument': argument}
+                        df_return = pd.DataFrame(data_return)
+                        
+                    elif g_type == "bar":
+                        col_name.append(result_single[0])
+                        argument.append(result_single[1][0])
+                        anomal_attribute.append(result_single[1][1])
+                        value.append(result_single[1][2])
+                        percent_dominate.append(result_single[1][3])
+                        data_return = {'col_name':col_name, 'argument':argument, 'anomal_attribute': anomal_attribute,
+                                    'anomal_value': value, 'percent_dominate': percent_dominate}
+                        df_return = pd.DataFrame(data_return)
+                    
+                    elif g_type == "box":
+                        col_name.append(result_single[0])
+                        exceed_lower.append(result_single[1][0])
+                        exceed_upper.append(result_single[1][1])
+                        total.append(result_single[1][2])
+                        outlier_percent.append(result_single[1][3])
+                        argument.append(result_single[1][4])
+                        data_return = {'col_name':col_name, 'exceed_lower':exceed_lower, 'exceed_upper': exceed_upper,
+                                    'total': total, 'outlier_percent': outlier_percent, 'argument': argument}
+                        df_return = pd.DataFrame(data_return)
+
 
         elif g_type in double_col:
             for i,r in df_combine_filter.iterrows():
                 func_double = switcher.get((r.values[2],r.values[3]), lambda: "Error: Invalid column type presented")
                 result_double = func_double(r.values[0], r.values[1], g_type)
                 if result_double != None:
-                    if len(result_double) == 3:
+                    if len(result_double) == 4:
                         if g_type == "scatter":
                             col_1_name.append(result_double[0])
                             col_2_name.append(result_double[1])
                             corr_type.append(result_double[2])
-                            data_return = {'col_1_name':col_1_name, 'col_2_name':col_2_name, 'corr_type': corr_type}
+                            corr_target.append(result_double[3])
+                            data_return = {'col_1_name':col_1_name, 'col_2_name':col_2_name, 'corr_type': corr_type, 'corr_target': corr_target}
                             df_return = pd.DataFrame(data_return)
 
                             
