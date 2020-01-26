@@ -139,8 +139,8 @@ class Data(Resource):
         print(request.is_json)
         data = json.loads(request.get_data().decode("utf-8"))
         # data = pd.DataFrame(list(data.items()), columns=df_obj.data_type.columns)
-        df_obj.data_type = pd.DataFrame(data)
-        print(df_obj.data_type)
+        df_obj.data_type = pd.DataFrame(data['data'])
+        # print(data)
         return "success", {'Access-Control-Allow-Origin': '*'}
 # for Upload CSV data
 class Upload(Resource):
