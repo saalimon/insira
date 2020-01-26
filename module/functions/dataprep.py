@@ -564,7 +564,7 @@ class Data_prep:
                         data_return = {'col_name':col_name, 'dis_type':dis_type, 'mode_type': mode_type}
                         df_return = pd.DataFrame(data_return)
                             
-                    if g_type == "ecdf":
+                    elif g_type == "ecdf":
                         col_name.append(result_single[0])
                         break_percent.append(result_single[1][0])
                         value.append(result_single[1][1])
