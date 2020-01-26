@@ -91,7 +91,7 @@
                     var max = d3.max(data[i], function (d) { return +d.value })
                     var min = d3.min(data[i], function (d) { return +d.value })
                     var x = d3.scaleLinear()
-                        .domain([min, max])     // can use this instead of 1000 to have the max of data: d3.max(data, function(d) { return +d.price })
+                        .domain([min, max+1])     // can use this instead of 1000 to have the max of data: d3.max(data, function(d) { return +d.price })
                         .range([0, width]);
                     svg[i].append("g")
                         .attr("transform", "translate(0," + height + ")")
@@ -101,9 +101,11 @@
                         .domain(x.domain())  // then the domain of the graphic
                         .thresholds(x.ticks(binwidth)); // then the numbers of bins
                     var bins = histogram(data[i]);
+                    console.log(keys[i],bins);
                     var y = d3.scaleLinear()
                         .range([height, 0]);
-                    y.domain([0, d3.max(bins, function (d) { return d.length; })]);   // d3.hist has to be called before the Y axis obviously
+                    console.log(keys[i]+' length',d3.max(bins, function (d) { return +d.length }))
+                    y.domain([0, d3.max(bins, function (d) { return +d.length })]);   // d3.hist has to be called before the Y axis obviously
                     svg[i].append("g")
                         .call(d3.axisLeft(y));
 
@@ -270,7 +272,6 @@
                     //     .range([0, width])
                     //     .domain(data[i].map(function (d) { return d.name; }))
                     //     .padding(0.2);
-                    console.log()
                     svg[i].append("g")
                         .attr("transform", "translate(0," + height + ")")
                         .call(d3.axisBottom(x))
