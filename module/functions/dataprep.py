@@ -14,6 +14,7 @@ class Data_prep:
         self.data_comb = self._data_combinator()
         self.cat_count = self._cat_unique_count()
         self.na_warn = self._find_na()
+        self.target = None
 
     def _data_separator(self):
         """

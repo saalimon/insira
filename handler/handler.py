@@ -140,7 +140,8 @@ class Data(Resource):
         data = json.loads(request.get_data().decode("utf-8"))
         # data = pd.DataFrame(list(data.items()), columns=df_obj.data_type.columns)
         df_obj.data_type = pd.DataFrame(data['data'])
-        # print(data)
+        df_obj.target = data['target']
+        print(df_obj.target)
         return "success", {'Access-Control-Allow-Origin': '*'}
 # for Upload CSV data
 class Upload(Resource):
