@@ -62,9 +62,10 @@ class Data(Resource):
             return heat, {'Access-Control-Allow-Origin': '*'}
         elif args1 == 'boxplot':
             # show data qualtile and outliner of single data
-            # result = df_obj.graph_selector('boxplot')
+            result = df_obj.graph_selector('box')
             boxplot = {'Colnames':[],'Values':[],'Descriptions':[]}
-            colname = df_obj.data_type[df_obj.data_type.col_type == "numeric"].col_name.to_list()
+            # colname = df_obj.data_type[df_obj.data_type.col_type == "numeric"].col_name.to_list()
+            colname = result['col_name']
             for x in colname:
                 boxplot['Colnames'].append(x)
                 boxplot_df = df_obj.df.filter([x], axis=1)
