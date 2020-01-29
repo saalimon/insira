@@ -9,7 +9,125 @@ import json
 # sys.path.insert(0, './functions')
 sys.path.insert(0, './module')
 import functions
+def distribution():
+    # show data distribution of single numerical data 
+    result = df_obj.graph_selector('histogram')
+    # print(result)
+    distribution = {'Colnames':[],'Values':[],'Descriptions':[]}
+    # colname = df_obj.data_type[df_obj.data_type.col_type == "numeric"].col_name.to_list()
+    if result is not None:
+        colname = result['col_name']
+        for x in colname:
+            description = 'กราฟนี้คือการกระจายตัวของ{}'.format(x)
+            distribution['Colnames'].append(x)
+            distribution_df = df_obj.df.filter([x], axis=1)
+            distribution_df.columns = ['value']
+            distribution['Values'].append({x:distribution_df.to_dict(orient='records')})
+            # description session 
+            # print(result[result.col_name==x].dis_type.values[0])
+            if result[result.col_name==x].dis_type.values[0] is not None:
+                description_dis_type = ' โดยกราฟมีลักษณะ{}'.format(result[result.col_name==x].dis_type.values[0])
+                description = description+description_dis_type
+            if result[result.col_name==x].mode_type.values[0] is not None:
+                description_mode_type = 'และมีลักษณะการกระจายตัวแบบ{}'.format(result[result.col_name==x].mode_type.values[0])
+                description = description+description_mode_type
 
+            distribution['Descriptions'].append({x:description})
+    return distribution
+def scatter():
+     # show correlation between 2 numerical data
+    result = df_obj.graph_selector('scatter')
+    # print(result)
+    scatter = {'Colnames':[],'Values':[],'Descriptions':[]}
+
+    # corrlist = df_obj.data_comb[(df_obj.data_comb.col_1_type == "numeric") & (df_obj.data_comb.col_2_type == "numeric")].loc[:, ['col_1_name','col_2_name']].values.tolist()
+    # print(result)
+    if result is not None:
+        corrlist = result[['col_1_name','col_2_name']].values.tolist()
+        for corr in corrlist:
+            description = 'กราฟนี้คือการความสัมพันธ์ระหว่าง {} และ​ {} '.format(corr[0],corr[1])
+            str1 = ','.join([str(elem) for elem in corr]) 
+            temp = df_obj.df[corr]
+            temp.columns = ['x','y']
+            temp = temp.to_dict(orient='records')
+            scatter['Colnames'].append(str1)
+            scatter['Values'].append({str1:temp})
+            # description
+            if result[(result.col_1_name==corr[0]) & (result.col_2_name==corr[1])].corr_type.values[0] is not None:
+                description_corr_type = result[(result.col_1_name==corr[0]) & (result.col_2_name==corr[1])].corr_type.values[0]
+                if description_corr_type == 'strong postive':
+                    description_corr_type ='มีลักษณะความสัมพันธ์มากในเชิงบวก'
+                elif description_corr_type == 'strong negative':
+                    description_corr_type ='มีลักษณะความสัมพันธ์มากในเชิงลบ'
+                elif description_corr_type == 'moderate postive':
+                    description_corr_type ='มีลักษณะความสัมพันธ์ในเชิงบวก'
+                elif description_corr_type == 'moderate negative':
+                    description_corr_type ='มีลักษณะความสัมพันธ์ในเชิงลบ'
+                description = description + description_corr_type
+            scatter['Descriptions'].append({str1: description})
+    return scatter
+def heatmap():
+    heat = df_obj.df.corr()
+    a = heat.unstack().to_dict()
+    heat = {'Colnames':[],'Values':[],'Descriptions':[]}
+    for a_i in a:
+        heat['Values'].append({'x':a_i[0],'y':a_i[1],'value':a[a_i]})
+    colname = df_obj.data_type[df_obj.data_type.col_type == "numeric"].col_name.to_list()
+    for x in colname:
+        heat['Colnames'].append(x)
+    heat['Descriptions'].append("กราฟนี้แสดง")
+    return heat
+def boxplot():
+    # show data qualtile and outliner of single data
+    result = df_obj.graph_selector('box')
+    print(result)
+    boxplot = {'Colnames':[],'Values':[],'Descriptions':[]}
+    # colname = df_obj.data_type[df_obj.data_type.col_type == "numeric"].col_name.to_list()
+    if result is not None:
+        colname = result['col_name']
+        for x in colname:
+            description = 'กราฟนี้เป็นกราฟของ {} โดยแสดงถึงค่าการกระจายตัวของกลุ่ม ซึ่งจากกราฟพบว่าค่าเฉลี่ยของข้อมูลอยู่ที่ {} มีค่าในQ1 คือ {} Q2 คือ {} และ Q3 คือ {} '.format(x,'dummy','dummy','dummy','dummy')
+            boxplot['Colnames'].append(x)
+            boxplot_df = df_obj.df.filter([x], axis=1)
+            boxplot['Values'].append({x:boxplot_df[x].to_list()})
+            # description 
+            if result[result.col_name == x].outlier_percent.values[0] is not None:
+                description_outlier_percent = result[result.col_name == x].outlier_percent.values[0]
+                description_outlier_percent = 'ปริมาณข้อมูลที่อยู่ห่างจากกลุ่มมาก ๆ มีอยู่ {} ซึ่งเป็นปริมาณที่{}'.format(description_outlier_percent,result[result.col_name == x].argument.values[0])
+                description = description+description_outlier_percent
+            boxplot['Descriptions'].append({x:description}) 
+    return boxplot
+def bar_cat():
+    result = df_obj.graph_selector('bar')
+    bar_cat = {'Colnames':[],'Values':[],'Descriptions':[]}
+    if result is not None:
+        colname = result['col_name']
+        for x in colname:
+            bar_cat['Colnames'].append(x)
+            tempT = df_obj.cat_count[x].T.to_dict(orient='records')[0]
+            bar = []
+            for i in tempT:
+                bar.append({'name':i,'value':tempT[i]})
+            bar_cat['Values'].append({x:bar})
+            bar_cat['Descriptions'].append({x:"กราฟนี้แสดง"})
+    return bar_cat
+def ecdf():
+    result = df_obj.graph_selector('ecdf')
+    ecdf = {'Colnames':[],'Values':[],'Descriptions':[]}
+    # colname = df_obj.data_type[df_obj.data_type.col_type == "numeric"].col_name.to_list()
+    if result is not None:
+        colname = result['col_name']
+        for x in colname:
+            # print(x)
+            _ecdf = df_obj.prep_ecdf(x)
+            # print(_ecdf[0])
+            if _ecdf[0] > 0:
+                _ecdf = _ecdf[1].to_dict(orient='records')
+                
+                ecdf['Colnames'].append(x)
+                ecdf['Values'].append({x:_ecdf})
+                ecdf['Descriptions'].append({x:"กราฟนี้แสดง"})
+    return ecdf
 class Data(Resource):
     def get(self):
         parser = reqparse.RequestParser()
@@ -17,92 +135,17 @@ class Data(Resource):
         args = parser.parse_args()
         args1 = args['arg1'] 
         if args1 == 'distribution':
-            # show data distribution of single numerical data 
-            result = df_obj.graph_selector('histogram')
-            # print(result)
-            distribution = {'Colnames':[],'Values':[],'Descriptions':[]}
-            # colname = df_obj.data_type[df_obj.data_type.col_type == "numeric"].col_name.to_list()
-            colname = result['col_name']
-            for x in colname:
-                distribution['Colnames'].append(x)
-                distribution_df = df_obj.df.filter([x], axis=1)
-                distribution_df.columns = ['value']
-                distribution['Values'].append({x:distribution_df.to_dict(orient='records')})
-                distribution['Descriptions'].append({x:"กราฟนี้แสดง"})
-            return distribution, {'Access-Control-Allow-Origin': '*'}
-
+            return distribution(), {'Access-Control-Allow-Origin': '*'}
         elif args1 == 'scatter':
-            # show correlation between 2 numerical data
-            result = df_obj.graph_selector('scatter')
-            # print(result)
-            scatter = {'Colnames':[],'Values':[],'Descriptions':[]}
-            # corrlist = df_obj.data_comb[(df_obj.data_comb.col_1_type == "numeric") & (df_obj.data_comb.col_2_type == "numeric")].loc[:, ['col_1_name','col_2_name']].values.tolist()
-            corrlist = result[['col_1_name','col_2_name']].values.tolist()
-            for corr in corrlist:
-                str1 = ','.join([str(elem) for elem in corr]) 
-                temp = df_obj.df[corr]
-                temp.columns = ['x','y']
-                temp = temp.to_dict(orient='records')
-                scatter['Colnames'].append(str1)
-                scatter['Values'].append({str1:temp})
-                scatter['Descriptions'].append({str1:"กราฟนี้แสดง"})
-            return scatter, {'Access-Control-Allow-Origin': '*'}
-
+            return scatter(), {'Access-Control-Allow-Origin': '*'}
         elif args1 == 'heatmap':
-            heat = df_obj.df.corr()
-            a = heat.unstack().to_dict()
-            heat = {'Colnames':[],'Values':[],'Descriptions':[]}
-            for a_i in a:
-                heat['Values'].append({'x':a_i[0],'y':a_i[1],'value':a[a_i]})
-            colname = df_obj.data_type[df_obj.data_type.col_type == "numeric"].col_name.to_list()
-            for x in colname:
-                heat['Colnames'].append(x)
-            heat['Descriptions'].append("กราฟนี้แสดง")
-
-            return heat, {'Access-Control-Allow-Origin': '*'}
+            return heatmap(), {'Access-Control-Allow-Origin': '*'}
         elif args1 == 'boxplot':
-            # show data qualtile and outliner of single data
-            result = df_obj.graph_selector('box')
-            boxplot = {'Colnames':[],'Values':[],'Descriptions':[]}
-            # colname = df_obj.data_type[df_obj.data_type.col_type == "numeric"].col_name.to_list()
-            colname = result['col_name']
-            for x in colname:
-                boxplot['Colnames'].append(x)
-                boxplot_df = df_obj.df.filter([x], axis=1)
-                boxplot['Values'].append({x:boxplot_df[x].to_list()})
-                boxplot['Descriptions'].append({x:"กราฟนี้แสดง"}) 
-            return boxplot, {'Access-Control-Allow-Origin': '*'}
+            return boxplot(), {'Access-Control-Allow-Origin': '*'}
         elif args1 == 'bar_cat':
-            result = df_obj.graph_selector('bar')
-            # print(result)
-            bar_cat = {'Colnames':[],'Values':[],'Descriptions':[]}
-            colname = result['col_name']
-            for x in colname:
-                bar_cat['Colnames'].append(x)
-                tempT = df_obj.cat_count[x].T.to_dict(orient='records')[0]
-                bar = []
-                for i in tempT:
-                    bar.append({'name':i,'value':tempT[i]})
-                bar_cat['Values'].append({x:bar})
-                bar_cat['Descriptions'].append({x:"กราฟนี้แสดง"})
-            return bar_cat, {'Access-Control-Allow-Origin': '*'}
+            return bar_cat(), {'Access-Control-Allow-Origin': '*'}
         elif args1 == 'ecdf':
-            result = df_obj.graph_selector('ecdf')
-            ecdf = {'Colnames':[],'Values':[],'Descriptions':[]}
-            # colname = df_obj.data_type[df_obj.data_type.col_type == "numeric"].col_name.to_list()
-            colname = result['col_name']
-            for x in colname:
-                # print(x)
-                _ecdf = df_obj.prep_ecdf(x)
-                # print(_ecdf[0])
-                if _ecdf[0] > 0:
-                    _ecdf = _ecdf[1].to_dict(orient='records')
-                    
-                    ecdf['Colnames'].append(x)
-                    ecdf['Values'].append({x:_ecdf})
-                    ecdf['Descriptions'].append({x:"กราฟนี้แสดง"})
-            
-            return ecdf, {'Access-Control-Allow-Origin': '*'}
+            return ecdf(), {'Access-Control-Allow-Origin': '*'}
         elif args1 == 'time':
             # test with supermarket dataset
             time = {'Colnames':[],'Values':[],'Descriptions':[]}
@@ -132,22 +175,49 @@ class Data(Resource):
             
             return line, {'Access-Control-Allow-Origin': '*'}
         else:
-            return "success", {'Access-Control-Allow-Origin': '*'}
+            all_graph = {
+                            'Heatmap':{'Colnames':[],'Values':[],'Descriptions':[]},
+                            'Distribution':{'Colnames':[],'Values':[],'Descriptions':[]},
+                            'Scatter':{'Colnames':[],'Values':[],'Descriptions':[]},
+                            'Boxplot':{'Colnames':[],'Values':[],'Descriptions':[]},
+                            'Bar_cat':{'Colnames':[],'Values':[],'Descriptions':[]},
+                            'Ecdf':{'Colnames':[],'Values':[],'Descriptions':[]}
+                        }
+            all_graph['Heatmap'] = heatmap()
+            all_graph['Heatmap']['Values'] = []
+            all_graph['Distribution'] = distribution()
+            all_graph['Distribution']['Values'] = []
+            all_graph['Scatter'] = scatter()
+            all_graph['Scatter']['Values'] = []
+            all_graph['Boxplot'] = boxplot()
+            all_graph['Boxplot']['Values'] = []
+            all_graph['Bar_cat'] = bar_cat()
+            all_graph['Bar_cat']['Values'] = []
+            all_graph['Ecdf'] = ecdf()
+            all_graph['Ecdf']['Values'] = []
+            return all_graph, {'Access-Control-Allow-Origin': '*'}
         # next step is time series variable 
 
         return "success", {'Access-Control-Allow-Origin': '*'}
     def post(self): 
-        print(request.is_json)
+        # print(request.is_json)
         data = json.loads(request.get_data().decode("utf-8"))
         # data = pd.DataFrame(list(data.items()), columns=df_obj.data_type.columns)
         df_obj.data_type = pd.DataFrame(data['data'])
-        df_obj.target = data['target']
-        print(df_obj.target)
+        if "target" in data:
+            print("have target")
+            df_obj.target = data['target']
+        else:
+            print("not have target")
+        df_obj.data_comb = df_obj._data_combinator()
+        df_obj.cat_count = df_obj._cat_unique_count()
+        # print(df_obj.data_comb)
+        # print(df_obj.cat_count)
         return "success", {'Access-Control-Allow-Origin': '*'}
 # for Upload CSV data
 class Upload(Resource):
     def get(self):
-        print(df_obj.data_type.to_dict(orient='records'))
+        # print(df_obj.data_type.to_dict(orient='records'))
         return df_obj.data_type.to_dict(orient='records'), {'Access-Control-Allow-Origin': '*'}
         # return jsonify({'status': 'ok', 'data': df_obj.df.to_dict(orient='split')}), {'Access-Control-Allow-Origin': '*'}
     def post(self):
