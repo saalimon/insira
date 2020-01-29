@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 import math
+from sklearn import feature_selection, preprocessing
 
 # Note: function with _ infront of function name indicated that it is a function for internal use only
 
@@ -30,6 +31,7 @@ class Data_prep:
         for col in self.df.columns:
             d_type = self.df[col].dtype
             unique_value = self.df[col].unique().size / self.df.index.size
+            binary_category = self.df[col].values
 
             #check unqiue name
             unique_name = [x in col for x in unique_list]
@@ -38,10 +40,11 @@ class Data_prep:
                 col_type.append('unique')
             elif col in ordinal_list:
                 col_type.append('ordinal')
+            elif d_type == 'object' or len(binary_category[(binary_category == 0) | (binary_category == 1)]) == len(self.df[col]):
+                col_type.append('category')
             elif d_type == 'int64' or d_type == 'float64':
                 col_type.append('numeric')
-            elif d_type == 'object':
-                col_type.append('category')
+
 
         #Init list of Dataframe
         data_type_init = {'col_name':list(self.df.columns), 'col_type':col_type} 
@@ -326,7 +329,7 @@ class Data_prep:
                         #with target
                         if self.target != None:
                             #current interest is target
-                            if self.target == i:
+                            if self.target == i or self.target == r.index[index_i]:r.index[index_i]
                                 #for positive correlation
                                 if index_v > 0:
                                     if index_v > 0.6 and index_v < 0.8:
@@ -416,7 +419,9 @@ class Data_prep:
                 return 0, None, None
 
     def _find_outlier_box(self, col):
-    
+        """
+        This function is use to determine the outlier of box-plot
+        """
         score = 0
         argument = None
         Q1 = self.df[col].quantile(.25)
@@ -424,6 +429,10 @@ class Data_prep:
         IQR = Q3 -Q1
         data_length = len(self.df[col])
         
+        _min = self.df[col].min()
+        _max = self.df[col].max()
+        _mean = self.df[col].mean()
+
         exceed_lower = len(self.df[col][((self.df[col] < (Q1 - 1.5 * IQR)))])
         exceed_upper = len(self.df[col][((self.df[col] > (Q3 + 1.5 * IQR)))])
         total = exceed_lower+exceed_upper
@@ -445,7 +454,7 @@ class Data_prep:
             argument = None
             percentage = None
         
-        return score, exceed_lower, exceed_upper, total, percentage, argument
+        return score, exceed_lower, exceed_upper, total, percentage, argument, _min, _max, _mean
     
     def _numerical_test(self, col, g_type):
         if g_type == 'ecdf':
@@ -466,7 +475,7 @@ class Data_prep:
             res_box = self._find_outlier_box(col)
             score = res_box[0]
             if score >= 1:
-                return col, res_box[1:6]
+                return col, res_box[1:9]
 
         return None
 
@@ -528,6 +537,9 @@ class Data_prep:
         exceed_upper = []
         total = []
         outlier_percent = []
+        box_min = []
+        box_max = []
+        box_mean = []
 
         #bar
         anomal_attribute = []
@@ -551,6 +563,13 @@ class Data_prep:
             ('category','numeric'): self._num_cat_test,
             ('category','category'): self._cat_cat_test,
         }
+        
+        # if self.target != None:
+        #     mutual xxx
+        #     res_mutual = mutual xxx
+        #     #append res_mutual
+        #     #increase priority of grpah by mutual info
+        #     #end
 
         if g_type in single_col:
             for i,r in df_type_filter.iterrows():
@@ -589,8 +608,12 @@ class Data_prep:
                         total.append(result_single[1][2])
                         outlier_percent.append(result_single[1][3])
                         argument.append(result_single[1][4])
+                        box_min.append(result_single[1][5])
+                        box_max.append(result_single[1][6])
+                        box_mean.append(result_single[1][7])
                         data_return = {'col_name':col_name, 'exceed_lower':exceed_lower, 'exceed_upper': exceed_upper,
-                                    'total': total, 'outlier_percent': outlier_percent, 'argument': argument}
+                                    'total': total, 'outlier_percent': outlier_percent, 'argument': argument, 
+                                    'min': box_min, 'max': box_max, 'mean': box_mean}
                         df_return = pd.DataFrame(data_return)
 
 
@@ -610,3 +633,22 @@ class Data_prep:
 
                             
         return df_return
+
+        def label_encoder(self): 
+            """
+            This is function for transform category type to numerical form 
+            """
+
+            le = preprocessing.LabelEncoder()
+            data_label = {}
+            df_label = pd.DataFrame(data_label) 
+            
+            for i,v in self.data_type.iterrows():
+                if v.values[1] == 'category':
+                    le.fit(self.df[v.values[0]])
+                    label_list = le.transform(self.df[v.values[0]])
+                    df_label[v.values[0]] = label_list
+                else:
+                    df_label[v.values[0]] = self.df[v.values[0]]
+
+            return df_label  
