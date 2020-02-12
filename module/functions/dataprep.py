@@ -140,17 +140,22 @@ class Data_prep:
         col_index, na_ratio = ([] for i in range(2))
         data_length = len(self.df)
         
-        for index,value in na.iteritems():
-            if value/data_length > 0.05:
-                col_index.append(index)
-                na_ratio.append(value/data_length)
-                inform = 1
-            elif value/data_length > 0.90:
-                self.df.drop([index], axis=1)
-                print("{0} has over 80% of null value contained, therefore it has to be dropped".format(index))
-            elif len(self.df[index]) <= 1:
-                self.df.drop([index], axis=1)
-                print("{0} has only 1 or less value contained, therefore it has to be dropped".format(index))
+        if self.target != None:
+            #forcefully drop NA to prevent error in label encoding
+            self.df.dropna()
+            
+        else:
+            for index,value in na.iteritems():
+                if value/data_length > 0.05:
+                    col_index.append(index)
+                    na_ratio.append(value/data_length)
+                    inform = 1
+                elif value/data_length > 0.90:
+                    self.df.drop([index], axis=1)
+                    print("{0} has over 80% of null value contained, therefore it has to be dropped".format(index))
+                elif len(self.df[index]) <= 1:
+                    self.df.drop([index], axis=1)
+                    print("{0} has only 1 or less value contained, therefore it has to be dropped".format(index))
 
         if inform == 1:
             na_list = {'col_name':col_index, 'na_ratio': na_ratio}
@@ -211,10 +216,10 @@ class Data_prep:
                 if math.isclose(v, temp ,rel_tol=5e-2):
                     uniform_count += 1
 
-        if len(counts[counts != 0]) == 2:
-            column_dis = 'Bernoulli'
-            score = 1
-        elif uniform_count == len(counts)-1:
+        # if len(counts[counts != 0]) == 2:
+        #     column_dis = 'Bernoulli'
+        #     score = 1
+        if uniform_count == len(counts)-1:
             column_dis = 'Uniform'
             score = 1
         elif math.isclose(mean, med, rel_tol=1e-1):
@@ -311,6 +316,7 @@ class Data_prep:
              
         return 0, None
     
+
     def _find_corr(self, df_corr, col_1, col_2):
         """
         This function is use to select interesting correlation found in data
@@ -329,7 +335,7 @@ class Data_prep:
                         #with target
                         if self.target != None:
                             #current interest is target
-                            if self.target == i or self.target == r.index[index_i]:r.index[index_i]
+                            if self.target == i or self.target == r.index[index_i]:
                                 #for positive correlation
                                 if index_v > 0:
                                     if index_v > 0.6 and index_v < 0.8:
@@ -634,21 +640,21 @@ class Data_prep:
                             
         return df_return
 
-        def label_encoder(self): 
-            """
-            This is function for transform category type to numerical form 
-            """
+    def label_encoder(self): 
+        """
+        This is function for transform category type to numerical form 
+        """
 
-            le = preprocessing.LabelEncoder()
-            data_label = {}
-            df_label = pd.DataFrame(data_label) 
-            
-            for i,v in self.data_type.iterrows():
-                if v.values[1] == 'category':
-                    le.fit(self.df[v.values[0]])
-                    label_list = le.transform(self.df[v.values[0]])
-                    df_label[v.values[0]] = label_list
-                else:
-                    df_label[v.values[0]] = self.df[v.values[0]]
+        le = preprocessing.LabelEncoder()
+        data_label = {}
+        df_label = pd.DataFrame(data_label) 
+        
+        for i,v in self.data_type.iterrows():
+            if v.values[1] == 'category':
+                le.fit(self.df[v.values[0]])
+                label_list = le.transform(self.df[v.values[0]])
+                df_label[v.values[0]] = label_list
+            else:
+                df_label[v.values[0]] = self.df[v.values[0]]
 
-            return df_label  
+        return df_label  
