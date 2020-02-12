@@ -1,4 +1,4 @@
-from flask import Flask, render_template, session
+from flask import Flask, render_template, session, send_from_directory
 from flask_restful import Resource, Api
 from flask_cors import CORS, cross_origin
 import sys

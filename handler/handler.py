@@ -6,6 +6,7 @@ import numpy as np
 import pandas as pd
 import sys
 import json
+from datetime import datetime
 # sys.path.insert(0, './functions')
 sys.path.insert(0, './module')
 import functions
@@ -80,7 +81,7 @@ def heatmap():
 def boxplot():
     # show data qualtile and outliner of single data
     result = df_obj.graph_selector('box')
-    print(result)
+    # print(result)
     boxplot = {'Colnames':[],'Values':[],'Descriptions':[]}
     # colname = df_obj.data_type[df_obj.data_type.col_type == "numeric"].col_name.to_list()
     if result is not None:
@@ -92,33 +93,44 @@ def boxplot():
             boxplot['Values'].append({x:boxplot_df[x].to_list()})
             # description 
             if result[result.col_name == x].outlier_percent.values[0] is not None:
-                description_outlier_percent = result[result.col_name == x].outlier_percent.values[0]
-                description_outlier_percent = 'ปริมาณข้อมูลที่อยู่ห่างจากกลุ่มมาก ๆ มีอยู่ {} ซึ่งเป็นปริมาณที่{}'.format(description_outlier_percent,result[result.col_name == x].argument.values[0])
+                description_outlier_percent = 'ปริมาณข้อมูลที่อยู่ห่างจากกลุ่มมาก ๆ มีอยู่ {0:.2f} % ซึ่งเป็นปริมาณที่{1}'.format(result[result.col_name == x].outlier_percent.values[0]*100,result[result.col_name == x].argument.values[0])
                 description = description+description_outlier_percent
             boxplot['Descriptions'].append({x:description}) 
     return boxplot
 def bar_cat():
     result = df_obj.graph_selector('bar')
     bar_cat = {'Colnames':[],'Values':[],'Descriptions':[]}
+    print(result)
     if result is not None:
         colname = result['col_name']
         for x in colname:
+            description = 'กราฟนี้เป็นแสดงการเปรียบเทียบปริมาณของ{} '.format(x)
             bar_cat['Colnames'].append(x)
             tempT = df_obj.cat_count[x].T.to_dict(orient='records')[0]
             bar = []
             for i in tempT:
                 bar.append({'name':i,'value':tempT[i]})
             bar_cat['Values'].append({x:bar})
-            bar_cat['Descriptions'].append({x:"กราฟนี้แสดง"})
+            if result[result.col_name == x].argument.values[0] is not None:
+                description = description + 'ซึ่งมีลักษณะของข้อมูลอยู่ในรูปแบบที่เป็น{} '.format(result[result.col_name == x].argument.values[0])
+            if result[result.col_name == x].anomal_attribute.values[0] is not None:
+                description = description + 'มี anomal attribute {} '.format(result[result.col_name == x].anomal_attribute.values[0])
+            if result[result.col_name == x].anomal_value.values[0] is not None:
+                description = description + 'มี anomal value {} '.format(result[result.col_name == x].anomal_value.values[0])
+            if result[result.col_name == x].percent_dominate.values[0] is not None:
+                description = description + 'มี percent dominate อยู่ที่ {0:.2f} % '.format(result[result.col_name == x].percent_dominate.values[0]*100 )
+            bar_cat['Descriptions'].append({x:description})
     return bar_cat
 def ecdf():
     result = df_obj.graph_selector('ecdf')
+    # print(result)
     ecdf = {'Colnames':[],'Values':[],'Descriptions':[]}
     # colname = df_obj.data_type[df_obj.data_type.col_type == "numeric"].col_name.to_list()
     if result is not None:
         colname = result['col_name']
         for x in colname:
             # print(x)
+            description = 'กราฟนี้เป็นกราฟแจกแจงสะสมเชิงประจักษ์ของ {} '.format(x)
             _ecdf = df_obj.prep_ecdf(x)
             # print(_ecdf[0])
             if _ecdf[0] > 0:
@@ -126,7 +138,11 @@ def ecdf():
                 
                 ecdf['Colnames'].append(x)
                 ecdf['Values'].append({x:_ecdf})
-                ecdf['Descriptions'].append({x:"กราฟนี้แสดง"})
+                # descriptions
+
+                if result[result.col_name == x].break_percent.values[0] is not None:
+                    description = description + 'ซึ่งมีค่าอัตราการการกระจายของข้อมูลอยู่ที่ {0:.2f} %'.format(result[result.col_name == x].break_percent.values[0])
+                ecdf['Descriptions'].append({x:description})
     return ecdf
 class Data(Resource):
     def get(self):
@@ -152,19 +168,22 @@ class Data(Resource):
             # print("time")
             col = df_obj.data_type
             # create new best solution later 
-            time_col = col[(col.col_name == 'date') |(col.col_name == 'Date') ].col_name.values
+            time_col = col[(col.col_type == 'date')].col_name.values
             numeric_col = col[(col.col_type == 'numeric')].col_name.values
+            print('Time')
             for t in time_col:
                 for n in numeric_col:
                     name = t+','+n
                     temp = df_obj.df[[t,n]]
                     temp.columns = ['x','y']
+                    temp['x']= temp['x'].dt.strftime('%Y-%m-%d')
                     temp = temp.to_dict(orient='records')
                     time['Colnames'].append(name)
                     time['Values'].append({name:temp})
                     time['Descriptions'].append({name:"กราฟนี้แสดง"})
                     # return time, {'Access-Control-Allow-Origin': '*'}
             # select yaxis of date time
+            # print(time)
             return time, {'Access-Control-Allow-Origin': '*'}
         elif args1 == 'bar_num':
             bar_num = {'Colnames':[],'Values':[],'Descriptions':[]}
