@@ -4,6 +4,7 @@ from flask import request,jsonify,session,render_template
 from flask_restful import Resource,reqparse
 import numpy as np
 import pandas as pd
+import math
 import sys
 import json
 from datetime import datetime
@@ -84,10 +85,11 @@ def boxplot():
     # print(result)
     boxplot = {'Colnames':[],'Values':[],'Descriptions':[]}
     # colname = df_obj.data_type[df_obj.data_type.col_type == "numeric"].col_name.to_list()
+    # print(result)
     if result is not None:
         colname = result['col_name']
         for x in colname:
-            description = 'กราฟนี้เป็นกราฟของ {} โดยแสดงถึงค่าการกระจายตัวของกลุ่ม ซึ่งจากกราฟพบว่าค่าเฉลี่ยของข้อมูลอยู่ที่ {} มีค่าในQ1 คือ {} Q2 คือ {} และ Q3 คือ {} '.format(x,'dummy','dummy','dummy','dummy')
+            description = 'กราฟนี้เป็นกราฟของ {0} โดยแสดงถึงค่าการกระจายตัวของกลุ่ม ซึ่งจากกราฟพบว่าค่าเฉลี่ยของข้อมูลอยู่ที่ {1:.2f} มีค่าต่ำสุดคือ {2:.2f} และค่าสูงสุดคือ {3:.2f}'.format(x,result[result.col_name == x]['mean'].values[0],result[result.col_name == x]['min'].values[0],result[result.col_name == x]['max'].values[0])
             boxplot['Colnames'].append(x)
             boxplot_df = df_obj.df.filter([x], axis=1)
             boxplot['Values'].append({x:boxplot_df[x].to_list()})
@@ -115,9 +117,9 @@ def bar_cat():
                 description = description + 'ซึ่งมีลักษณะของข้อมูลอยู่ในรูปแบบที่เป็น{} '.format(result[result.col_name == x].argument.values[0])
             if result[result.col_name == x].anomal_attribute.values[0] is not None:
                 description = description + 'มี anomal attribute {} '.format(result[result.col_name == x].anomal_attribute.values[0])
-            if result[result.col_name == x].anomal_value.values[0] is not None:
+            if result[result.col_name == x].anomal_value.values[0] is not None and not math.isnan(result[result.col_name == x].anomal_value.values[0]):
                 description = description + 'มี anomal value {} '.format(result[result.col_name == x].anomal_value.values[0])
-            if result[result.col_name == x].percent_dominate.values[0] is not None:
+            if result[result.col_name == x].percent_dominate.values[0] is not None and not math.isnan(result[result.col_name == x].percent_dominate.values[0]):
                 description = description + 'มี percent dominate อยู่ที่ {0:.2f} % '.format(result[result.col_name == x].percent_dominate.values[0]*100 )
             bar_cat['Descriptions'].append({x:description})
     return bar_cat
@@ -144,6 +146,27 @@ def ecdf():
                     description = description + 'ซึ่งมีค่าอัตราการการกระจายของข้อมูลอยู่ที่ {0:.2f} %'.format(result[result.col_name == x].break_percent.values[0])
                 ecdf['Descriptions'].append({x:description})
     return ecdf
+def time():
+    # do time series analysis
+    # test with supermarket dataset
+    time = {'Colnames':[],'Values':[],'Descriptions':[]}
+    # print("time")
+    col = df_obj.data_type
+    # create new best solution later 
+    time_col = col[(col.col_type == 'date')].col_name.values
+    numeric_col = col[(col.col_type == 'numeric')].col_name.values
+    for t in time_col:
+        for n in numeric_col:
+            name = t+','+n
+            temp = df_obj.df[[t,n]]
+            temp.columns = ['x','y']
+            temp['x']= temp['x'].dt.strftime('%Y-%m-%d')
+            temp = temp.to_dict(orient='records')
+            time['Colnames'].append(name)
+            time['Values'].append({name:temp})
+            time['Descriptions'].append({name:"กราฟนี้แสดงการเปลี่ยนแปลงตามเวลา"})
+            # return time, {'Access-Control-Allow-Origin': '*'}
+    return time
 class Data(Resource):
     def get(self):
         parser = reqparse.RequestParser()
@@ -163,33 +186,14 @@ class Data(Resource):
         elif args1 == 'ecdf':
             return ecdf(), {'Access-Control-Allow-Origin': '*'}
         elif args1 == 'time':
-            # test with supermarket dataset
-            time = {'Colnames':[],'Values':[],'Descriptions':[]}
-            # print("time")
-            col = df_obj.data_type
-            # create new best solution later 
-            time_col = col[(col.col_type == 'date')].col_name.values
-            numeric_col = col[(col.col_type == 'numeric')].col_name.values
-            print('Time')
-            for t in time_col:
-                for n in numeric_col:
-                    name = t+','+n
-                    temp = df_obj.df[[t,n]]
-                    temp.columns = ['x','y']
-                    temp['x']= temp['x'].dt.strftime('%Y-%m-%d')
-                    temp = temp.to_dict(orient='records')
-                    time['Colnames'].append(name)
-                    time['Values'].append({name:temp})
-                    time['Descriptions'].append({name:"กราฟนี้แสดง"})
-                    # return time, {'Access-Control-Allow-Origin': '*'}
-            # select yaxis of date time
-            # print(time)
-            return time, {'Access-Control-Allow-Origin': '*'}
+            return time(), {'Access-Control-Allow-Origin': '*'}
         elif args1 == 'bar_num':
+            #not finished
             bar_num = {'Colnames':[],'Values':[],'Descriptions':[]}
 
             return bar_num, {'Access-Control-Allow-Origin': '*'}
         elif args1 == 'line':
+            #not finished
             line = {'Colnames':[],'Values':[],'Descriptions':[]}
             
             return line, {'Access-Control-Allow-Origin': '*'}
@@ -200,7 +204,8 @@ class Data(Resource):
                             'Scatter':{'Colnames':[],'Values':[],'Descriptions':[]},
                             'Boxplot':{'Colnames':[],'Values':[],'Descriptions':[]},
                             'Bar_cat':{'Colnames':[],'Values':[],'Descriptions':[]},
-                            'Ecdf':{'Colnames':[],'Values':[],'Descriptions':[]}
+                            'Ecdf':{'Colnames':[],'Values':[],'Descriptions':[]},
+                            'Time':{'Colnames':[],'Values':[],'Descriptions':[]}
                         }
             all_graph['Heatmap'] = heatmap()
             all_graph['Heatmap']['Values'] = []
@@ -214,6 +219,8 @@ class Data(Resource):
             all_graph['Bar_cat']['Values'] = []
             all_graph['Ecdf'] = ecdf()
             all_graph['Ecdf']['Values'] = []
+            all_graph['Time'] = time()
+            all_graph['Time']['Values'] = []
             return all_graph, {'Access-Control-Allow-Origin': '*'}
         # next step is time series variable 
 

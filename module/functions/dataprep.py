@@ -332,9 +332,10 @@ class Data_prep:
                         #with target
                         if self.target != None:
                             #current interest is target
-                            if self.target == i or self.target == r.index[index_i]:r.index[index_i]
+                            if self.target == i or self.target == r.index[index_i]:
+                                # r.index[index_i]
                                 #for positive correlation
-                                if index_v > 0:
+                                if  index_v > 0:
                                     if index_v > 0.6 and index_v < 0.8:
                                             corr_type_mod = "moderate postive"
                                             corr_target = "correlate with target"
