@@ -43,7 +43,7 @@ class Data_prep:
                 col_type.append('unique')
             elif col in ordinal_list:
                 col_type.append('ordinal')
-            elif d_type == 'object' or len(binary_category[(binary_category == 0) | (binary_category == 1)]) == len(self.df[col]):
+            elif d_type == 'object' or len(self.df[col].unique()) == 2:
                 col_type.append('category')
             elif d_type == 'int64' or d_type == 'float64':
                 col_type.append('numeric')

@@ -14,7 +14,7 @@ import functions
 def distribution():
     # show data distribution of single numerical data 
     result = df_obj.graph_selector('histogram')
-    # print(result)
+    print("result his",result)
     distribution = {'Colnames':[],'Values':[],'Descriptions':[]}
     # colname = df_obj.data_type[df_obj.data_type.col_type == "numeric"].col_name.to_list()
     if result is not None:
@@ -155,6 +155,8 @@ def time():
     # create new best solution later 
     time_col = col[(col.col_type == 'date')].col_name.values
     numeric_col = col[(col.col_type == 'numeric')].col_name.values
+    print(time_col)
+    print(numeric_col)
     for t in time_col:
         for n in numeric_col:
             name = t+','+n
