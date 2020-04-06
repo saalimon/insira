@@ -4,6 +4,7 @@ import pandas as pd
 import numpy as np
 import math
 from sklearn import feature_selection, preprocessing
+from scipy import stats
 
 # Note: function with _ infront of function name indicated that it is a function for internal use only
 
@@ -97,14 +98,17 @@ class Data_prep:
         #init list of dataframe
         row_1_list, row_2_list, col_1_type, col_2_type = ([] for i in range(4))
 
-        #for sending cross column 
-        for index_outer,row_outer in self.data_type.iterrows():
-            for index_inner,row_inner in self.data_type.iterrows():
-                if index_inner > index_outer:
-                    row_1_list.append(row_outer['col_name'])
-                    row_2_list.append(row_inner['col_name'])
-                    col_1_type.append(row_outer['col_type'])
-                    col_2_type.append(row_inner['col_type'])
+        try:
+            #for sending cross column 
+            for index_outer,row_outer in self.data_type.iterrows():
+                for index_inner,row_inner in self.data_type.iterrows():
+                    if index_inner > index_outer:
+                        row_1_list.append(row_outer['col_name'])
+                        row_2_list.append(row_inner['col_name'])
+                        col_1_type.append(row_outer['col_type'])
+                        col_2_type.append(row_inner['col_type'])
+        except:
+            return 'Error: Failed to combine columns in _data_combinator function'
                     
         #construct list for dataframe and convert to dataframe
         send_list = {'col_1_name':row_1_list, 'col_2_name':row_2_list, 'col_1_type': col_1_type, 'col_2_type': col_2_type}
@@ -125,10 +129,13 @@ class Data_prep:
         df_send_filter_cat = self.data_type.loc[(self.data_type.col_type == 'category')]
         cat_col = [col for col in df_send_filter_cat['col_name']] 
 
-        for cat in cat_col:
-            df_aggregate = self.df.groupby(cat)[cat].count().to_frame()
-            del df_aggregate.index.name
-            dict_dataframe_collection[cat] = pd.DataFrame(df_aggregate, columns=[cat])
+        try:
+            for cat in cat_col:
+                df_aggregate = self.df.groupby(cat)[cat].count().to_frame()
+                del df_aggregate.index.name
+                dict_dataframe_collection[cat] = pd.DataFrame(df_aggregate, columns=[cat])
+        except:
+            return 'Error: Failed counting category in _cat_unique_count function'
 
         return dict_dataframe_collection
 
@@ -148,17 +155,20 @@ class Data_prep:
             self.df.dropna()
             
         else:
-            for index,value in na.iteritems():
-                if value/data_length > 0.05:
-                    col_index.append(index)
-                    na_ratio.append(value/data_length)
-                    inform = 1
-                elif value/data_length > 0.90:
-                    self.df.drop([index], axis=1)
-                    print("{0} has over 80% of null value contained, therefore it has to be dropped".format(index))
-                elif len(self.df[index]) <= 1:
-                    self.df.drop([index], axis=1)
-                    print("{0} has only 1 or less value contained, therefore it has to be dropped".format(index))
+            try:
+                for index,value in na.iteritems():
+                    if value/data_length > 0.05:
+                        col_index.append(index)
+                        na_ratio.append(value/data_length)
+                        inform = 1
+                    elif value/data_length > 0.90:
+                        self.df.drop([index], axis=1)
+                        print("{0} has over 80% of null value contained, therefore it has to be dropped".format(index))
+                    elif len(self.df[index]) <= 1:
+                        self.df.drop([index], axis=1)
+                        print("{0} has only 1 or less value contained, therefore it has to be dropped".format(index))
+            except:
+                return 'Error: Failed to inform or remove null value in _find_na function'
 
         if inform == 1:
             na_list = {'col_name':col_index, 'na_ratio': na_ratio}
@@ -167,7 +177,7 @@ class Data_prep:
 
         return inform, None
 
-    def prep_ecdf(self, col_name):
+    def _prep_ecdf(self, col_name):
         """ 
         This function is used to prepare a ecdf taking a column name as input
         and return dataframe contain axis & yaxis for ploting graph. Also return percentage & 
@@ -176,22 +186,27 @@ class Data_prep:
         Recommended graph label: title = "ECDF Plot", xlabel = 'Data Values', ylabel = 'Percentage'
         """
         
-        temp = 0
-        data_length = len(self.df[col_name])
-        xaxis = np.sort(self.df[col_name])
-        yaxis = np.arange(1, data_length+1)/float(data_length)
+        try:
+            temp = 0
+            data_length = len(self.df[col_name])
+            xaxis = np.sort(self.df[col_name])
+            yaxis = np.arange(1, data_length+1)/data_length
+        except:
+            return 'Error: Failed to convert data to ecdf axis in _prep_ecdf function'
         
         for i,v in enumerate(xaxis):
 
             ecdf_axis = {'xaxis':xaxis, 'yaxis':yaxis}
             df_ecdf = pd.DataFrame(ecdf_axis)
-
-            if i > 0:
-                if v/temp > 1.5:
-                    if i < data_length/2:
-                        return (1, df_ecdf, (i/data_length)*100, v, 'น้อยกว่า')
-                    else:
-                        return (1, df_ecdf, (1-i/data_length)*100, v, 'มากกว่า')
+            try:
+                if i > 0:
+                    if v/temp > 1.5:
+                        if i < data_length/2:
+                            return (1, df_ecdf, (i/data_length)*100, v, 'น้อยกว่า')
+                        else:
+                            return (1, df_ecdf, (1-i/data_length)*100, v, 'มากกว่า')
+            except:
+                return 'Error: error in _prep_ecdf function'
             temp = v
             
         
@@ -540,7 +555,6 @@ class Data_prep:
         df_label = self._label_encoder()
 
         try:
-
             try:
                 dummy_list = []
                 for i in df_label[col_name].values:
@@ -549,7 +563,7 @@ class Data_prep:
                     dummy_list.append(temp_list)
 
             except ValueError:
-                return 'Error: incorrect column name'
+                return 'Error: incorrect column name error in _chi_sq function'
 
             X = dummy_list
             y = df_label[self.target].values
@@ -558,26 +572,27 @@ class Data_prep:
 
             if p_value > 0.001 and p_value < 0.005:
                 stat_sig = p_value[0]
-                stat_sig_argument = "strong statistically dependent"
+                stat_sig_argument = "มีความสัมพันธฺระหว่างตัวแปรอย่างมาก"
                 is_sig = 1
 
             elif p_value > 0.075 and p_value < 0.1:
                 stat_sig = p_value[0]
-                stat_sig_argument = "weak statistically dependent"
+                stat_sig_argument = "มีความสัมพันธฺระหว่างตัวแปร"
                 is_sig = 1
 
             else:
                 stat_sig = p_value[0]
-                stat_sig_argument = "statistically independent"
+                stat_sig_argument = "ไม่มีความสัมพันธ์ระหว่างตัวแปร"
 
             return is_sig, stat_sig, stat_sig_argument
 
         except:
-            return 'Error: internal function error in chi_sq function'
+            return 'Error: internal function error in _chi_sq function'
     
-    def _one_way_anova(self, col):
+    def _anova_ttest(self, col):
         '''
         This function is use to test statistic hypothesis of indepedent category variable and dependent continuous variable
+        when data is normally distributed
         '''
         is_sig = 0
         stat_sig = 0
@@ -587,43 +602,200 @@ class Data_prep:
         df_label = self._label_encoder()
 
         try:
-            if len(self.df[col].unique()) >= 2:
-                try:
-                    dummy_list = []
-                    for i in df_label[col].values:
-                        temp_list = []
-                        temp_list.append(i)
-                        dummy_list.append(temp_list)
+            dummy_list = []
+            for i in df_label[col].values:
+                temp_list = []
+                temp_list.append(i)
+                dummy_list.append(temp_list)
 
-                except ValueError:
-                    return 'Error: incorrect column name'
+        except ValueError:
+            return 'Error: incorrect column name error in _anova_ttest function'
 
-                X = dummy_list
-                y = df_label[self.target].values
+        X = dummy_list
+        y = df_label[self.target].values
 
-                f_score, p_value = feature_selection.f_classif(X, y)
+        try:
+            if len(self.df[col].unique()) > 2:
+                f_score, p_value = feature_selection.f_oneway(X, y)
                 
-                if p_value > 0.001 and p_value < 0.005:
+                if p_value <= 0.05:
                     stat_sig = p_value[0]
-                    stat_sig_argument = "strong statistically dependent"
+                    stat_sig_argument = "ข้อมูล {0} ส่งผลต่อเป้าหมาย {1} อย่างมากโดยมีค่าเฉลี่ยแตกต่างกันระหว่างกลุ่มข้อมูล".format(col, self.target)
                     is_sig = 1
 
-                elif p_value > 0.075 and p_value < 0.1:
+                elif p_value > 0.05 and p_value < 0.1:
                     stat_sig = p_value[0]
                     
-                    stat_sig_argument = "weak statistically dependent"
+                    stat_sig_argument =  "ข้อมูล {0} ส่งผลต่อเป้าหมาย {1} โดยมีค่าเฉลี่ยแตกต่างกันระหว่างกลุ่มข้อมูล".format(col, self.target)
+                    is_sig = 1
+
+                else:
+                    stat_sig = p_value[0]
+                    stat_sig_argument =  "ข้อมูล {0} ไม่ส่งผลต่อเป้าหมาย {1}".format(col, self.target)
+                    
+                return is_sig, stat_sig, stat_sig_argument, 'anova'
+
+            elif len(self.df[col].unique()) == 2:
+                u_score, p_value = stats.ttest_ind(X,y)
+
+                if p_value <= 0.05:
+                    stat_sig = p_value[0]
+                    stat_sig_argument = "ข้อมูล {0} ส่งผลต่อเป้าหมาย {1} อย่างมากโดยมีค่าเฉลี่ยแตกต่างกันระหว่างกลุ่มข้อมูล".format(col, self.target)
+                    is_sig = 1
+
+                elif p_value > 0.05 and p_value < 0.1:
+                    stat_sig = p_value[0]
+                    
+                    stat_sig_argument =  "ข้อมูล {0} ส่งผลต่อเป้าหมาย {1} โดยมีค่าเฉลี่ยแตกต่างกันระหว่างกลุ่มข้อมูล".format(col, self.target)
                     is_sig = 1
                 else:
                     stat_sig = p_value[0]
-                    stat_sig_argument = "statistically independent"
+                    stat_sig_argument =  "ข้อมูล {0} ไม่ส่งผลต่อเป้าหมาย {1}".format(col, self.target)
                     
-                return is_sig, stat_sig, stat_sig_argument
-            
+                return is_sig, stat_sig, stat_sig_argument, 't-test'
+
             else:
-                return None, None, None
+                return None, None, None, None
 
         except:
-            return 'Error: internal function error in one_way_anova function'
+            return 'Error: internal function error in _anova_ttest function'
+
+    def _kruskal_u_test(self, col):
+        '''
+        This function is use to test statistic hypothesis of indepedent category variable and dependent continuous variable 
+        when data is not normally distributed
+        '''
+        is_sig = 0
+        stat_sig = 0
+        stat_sig_argument = ""
+        
+        #encoded categorical to numeric
+        df_label = self._label_encoder()
+
+        try:
+            dummy_list = []
+            for i in df_label[col].values:
+                temp_list = []
+                temp_list.append(i)
+                dummy_list.append(temp_list)
+
+        except ValueError:
+            return 'Error: incorrect column name error in _kruskal_u_test function'
+
+        X = dummy_list
+        y = df_label[self.target].values
+
+        try:
+            if len(self.df[col].unique()) > 2:
+                h_score, p_value = stats.kruskal(X, y)
+                
+                if p_value <= 0.05:
+                    stat_sig = p_value[0]
+                    stat_sig_argument = "ข้อมูล {0} ส่งผลต่อเป้าหมาย {1} อย่างมากโดยมีค่ามัธยฐานแตกต่างกันระหว่างกลุ่มข้อมูล".format(col, self.target)
+                    is_sig = 1
+
+                elif p_value > 0.05 and p_value < 0.1:
+                    stat_sig = p_value[0]
+                    
+                    stat_sig_argument =  "ข้อมูล {0} ส่งผลต่อเป้าหมาย {1} โดยมีค่ามัธยฐานแตกต่างกันระหว่างกลุ่มข้อมูล".format(col, self.target)
+                    is_sig = 1
+                else:
+                    stat_sig = p_value[0]
+                    stat_sig_argument =  "ข้อมูล {0} ไม่ส่งผลต่อเป้าหมาย {1}".format(col, self.target)
+                    
+                return is_sig, stat_sig, stat_sig_argument, 'kruskal'
+
+            elif len(self.df[col].unique()) == 2:
+                h_score, p_value = stats.mannwhitneyu(X,y)
+
+                if p_value <= 0.05:
+                    stat_sig = p_value[0]
+                    stat_sig_argument = "ข้อมูล {0} ส่งผลต่อเป้าหมาย {1} อย่างมากโดยมีค่ามัธยฐานแตกต่างกันระหว่างกลุ่มข้อมูล".format(col, self.target)
+                    is_sig = 1
+
+                elif p_value > 0.05 and p_value < 0.1:
+                    stat_sig = p_value[0]
+                    
+                    stat_sig_argument =  "ข้อมูล {0} ส่งผลต่อเป้าหมาย {1} โดยมีค่ามัธยฐานแตกต่างกันระหว่างกลุ่มข้อมูล".format(col, self.target)
+                    is_sig = 1
+                else:
+                    stat_sig = p_value[0]
+                    stat_sig_argument =  "ข้อมูล {0} ไม่ส่งผลต่อเป้าหมาย {1}".format(col, self.target)
+                    
+                return is_sig, stat_sig, stat_sig_argument, 'u-test'
+
+            else:
+                return None, None, None, None
+
+        except:
+            return 'Error: internal function error in _kruskal_u_test function'
+
+
+    def _f_regression_sign(self, col):
+        '''
+        This function is use to test statistic hypothesis of indepedent category variable and dependent continuous variable
+        '''
+        is_sig = 0
+        stat_sig = 0
+        stat_sig_argument = ""
+
+        try:
+            dummy_list = []
+            for i in self.df[col].values:
+                temp_list = []
+                temp_list.append(i)
+                dummy_list.append(temp_list)
+
+        except ValueError:
+            return 'Error: incorrect column name error in _f_regression_sign function'
+
+        X = dummy_list
+        y = self.df[self.target].values
+
+        try:
+            if (self._numercial_data_distribution(col)[1] == 'มีการแจกแจงแบบสมมาตร' and
+            self._numercial_data_distribution(self.target)[1] == 'มีการแจกแจงแบบสมมาตร') or (len(self.df[col]) >= 30 and len(self.df[self.target]) >= 30):
+                f_score, p_value = feature_selection.f_regression(X, y)
+                
+                if p_value <= 0.05:
+                    stat_sig = p_value[0]
+                    stat_sig_argument = "ข้อมูล {0} มีความแตกต่างของความแปรปรวนกับเป้าหมาย {1} อย่างชัดเจน".format(col, self.target)
+                    is_sig = 1
+
+                elif p_value > 0.05 and p_value < 0.1:
+                    stat_sig = p_value[0]
+                    stat_sig_argument =  "ข้อมูล {0} มีความแตกต่างของความแปรปรวนกับเป้าหมาย {1}".format(col, self.target)
+                    is_sig = 1
+
+                else:
+                    stat_sig = p_value[0]
+                    stat_sig_argument =  "ข้อมูล {0} ไม่มีความแตกต่างของความแปรปรวนกับเป้าหมาย {1}".format(col, self.target)
+                    
+                return is_sig, stat_sig, stat_sig_argument, 'f-test'
+
+            else:
+                sign_score, p_value = stats.wilcoxon(X, y) 
+
+                if p_value <= 0.05:
+                    stat_sig = p_value[0]
+                    stat_sig_argument = "ข้อมูล {0} มีความแตกต่างของความมัธยฐานกับเป้าหมาย {1} อย่างชัดเจน".format(col, self.target)
+                    is_sig = 1
+
+                elif p_value > 0.05 and p_value < 0.1:
+                    stat_sig = p_value[0]
+                    stat_sig_argument =  "ข้อมูล {0} มีความแตกต่างของความมัธยฐานกับเป้าหมาย {1}".format(col, self.target)
+                    is_sig = 1
+
+                else:
+                    stat_sig = p_value[0]
+                    stat_sig_argument =  "ข้อมูล {0} ไม่มีความแตกต่างของความมัธยฐานกับเป้าหมาย {1}".format(col, self.target)
+                    
+                return is_sig, stat_sig, stat_sig_argument, 'sign test'
+            
+            return None, None, None, None
+
+        except:
+            return 'Error: internal function error in _f_regression_sign function'
 
     def _target_mutual(self, col):
         """
@@ -682,7 +854,7 @@ class Data_prep:
 
     def _numerical_test(self, col, g_type):
         if g_type == 'ecdf':
-            res_ecdf =  self.prep_ecdf(col)
+            res_ecdf =  self._prep_ecdf(col)
             score = res_ecdf[0]
             if score == 1:
                 return col, res_ecdf[2:5]
@@ -735,41 +907,118 @@ class Data_prep:
         #For future release
         return None
 
+    def _numerical_test_target(self, col, g_type):
+        if g_type == 'ecdf':
+            res_ecdf =  self._prep_ecdf(col)
+            score = res_ecdf[0]
+            if score == 1:
+                return col, res_ecdf[2:5]
+                
+        elif g_type == 'histogram':
+            score_his, dis_type = self._numercial_data_distribution(col)
+            score_multi, mode_type = self._find_multimodal(col)
+            score = score_his+score_multi  
+            res_mutual = self._target_mutual(col)
+            score_mutual = res_mutual[0]   
+            res_f_sign = self._f_regression_sign(col)
+            stat_test_used = res_f_sign[-1]
+            stat_sig = res_f_sign[0] + res_mutual[0]  
+            if stat_sig >= 1 and score >= 1:
+                priority = 3 
+                return col, dis_type, mode_type, res_f_sign[1:3], priority, stat_test_used, res_mutual[1:3]
+
+            elif stat_sig == 0 and score >= 1:
+                priority = 2 
+                return col, dis_type, mode_type, res_f_sign[1:3], priority, stat_test_used, res_mutual[1:3]
+            
+            elif stat_sig >= 1 and score == 0:
+                priority = 1 
+                return col, dis_type, mode_type, res_f_sign[1:3], priority, stat_test_used, res_mutual[1:3]
+
+        elif g_type == 'box':
+            res_box = self._find_outlier_box(col)
+            score = res_box[0]
+            if score >= 1:
+                return col, res_box[1:9]
+
+        return None
+
+    def _num_num_test_target(self, col_1, col_2, g_type):
+        if g_type == 'scatter':
+
+            if (self._numercial_data_distribution(col_1)[1] == 'มีการแจกแจงแบบสมมาตร' and
+            self._numercial_data_distribution(col_2)[1] == 'มีการแจกแจงแบบสมมาตร') or (len(self.df[col_1]) >= 30 and len(self.df[col_2]) >= 30):
+                df_corr = self.df.corr(method ='pearson')
+                score, corr_type, corr_target = self._find_corr(df_corr, col_1, col_2) 
+                corr_method = 'pearson'
+                if score >= 1:
+                    return col_1, col_2, corr_type, corr_target, corr_method
+
+            else:
+                df_corr = self.df.corr(method ='spearman')
+                score, corr_type, corr_target = self._find_corr(df_corr, col_1, col_2)
+                corr_method = 'spearman'
+                if score >= 1:
+                    return col_1, col_2, corr_type, corr_target, corr_method
+
     def _categorical_test_target(self, col, g_type):
         if g_type == "bar":
             res_ratio = self._data_ratio(col)
+            res_mutual = self._target_mutual(col)
+            score_mutual = res_mutual[0]
             score = res_ratio[0]
+
             if self.data_type[self.data_type['col_name'] == self.target]['col_type'].values[0] == 'category':
                 res_stat_chi = self._chi_sq(col)
-                res_stat_mutual = self._target_mutual(col)
-                stat_sig = res_stat_chi[0] + res_stat_mutual[0]
+                stat_test_used = 'chi-square'
+                stat_sig = res_stat_chi[0] + score_mutual
     #         score_ratio, arg, attribute, value, percent_dominate = self._data_ratio(col)
                 if stat_sig >= 1 and score == 1:
                     priority = 3 
-                    return col, res_ratio[1:5], res_stat_chi[1:3],  res_stat_mutual[1:3], priority
+                    return col, res_ratio[1:5], res_stat_chi[1:3], priority, stat_test_used, res_mutual[1:3]
 
                 elif stat_sig == 0 and score == 1:
                     priority = 2 
-                    return col, res_ratio[1:5], res_stat_chi[1:3], res_stat_mutual[1:3], priority
+                    return col, res_ratio[1:5], res_stat_chi[1:3], priority, stat_test_used, res_mutual[1:3]
                 
                 elif stat_sig >= 1 and score == 0:
                     priority = 1 
-                    return col, res_ratio[1:5], res_stat_chi[1:3],  res_stat_mutual[1:3], priority
+                    return col, res_ratio[1:5], res_stat_chi[1:3], priority, stat_test_used, res_mutual[1:3]
 
             elif self.data_type[self.data_type['col_name'] == self.target]['col_type'].values[0] == 'numeric':
-                res_stat = self._one_way_anova(col)
-                stat_sig = res_stat[0]
-                if stat_sig == 1 and score == 1:
-                    priority = 3 
-                    return col, res_ratio[1:5], res_stat[1:3], priority
+                if self._numercial_data_distribution(self.target)[1] == 'มีการแจกแจงแบบสมมาตร' or len(self.df[self.target]) >= 30:
+                    res_stat_cat_normal = self._anova_ttest(col)
+                    stat_test_used = res_stat_cat_normal[-1]
+                    stat_sig = res_stat_cat_normal[0] + score_mutual
 
-                elif stat_sig == 0 and score == 1:
-                    priority = 2 
-                    return col, res_ratio[1:5], res_stat[1:3], priority
-                
-                elif stat_sig == 1 and score == 0:
-                    priority = 1 
-                    return col, res_ratio[1:5], res_stat[1:3], priority
+                    if stat_sig >= 1 and score == 1:
+                        priority = 3 
+                        return col, res_ratio[1:5], res_stat_cat_normal[1:3], priority, stat_test_used, res_mutual[1:3]
+
+                    elif stat_sig == 0 and score == 1:
+                        priority = 2 
+                        return col, res_ratio[1:5], res_stat_cat_normal[1:3], priority, stat_test_used, res_mutual[1:3]
+                    
+                    elif stat_sig >= 1 and score == 0:
+                        priority = 1 
+                        return col, res_ratio[1:5], res_stat_cat_normal[1:3], priority, stat_test_used, res_mutual[1:3]
+
+                else:
+                    res_stat_kruskal = self._kruskal_u_test(col)
+                    stat_test_used = res_stat_kruskal[-1]
+                    stat_sig = res_stat_kruskal[0] + score_mutual
+
+                    if stat_sig >= 1 and score == 1:
+                        priority = 3 
+                        return col, res_ratio[1:5], res_stat_kruskal[1:3], priority, stat_test_used, res_mutual[1:3]
+
+                    elif stat_sig == 0 and score == 1:
+                        priority = 2 
+                        return col, res_ratio[1:5], res_stat_kruskal[1:3], priority, stat_test_used, res_mutual[1:3]
+                    
+                    elif stat_sig >= 1 and score == 0:
+                        priority = 1 
+                        return col, res_ratio[1:5], res_stat_kruskal[1:3], priority, stat_test_used, res_mutual[1:3]
         return None
         
     def graph_selector(self, g_type):
@@ -786,35 +1035,22 @@ class Data_prep:
         mode_type = []
         
         #general
-        col_name = []
-        argument = []
-        value = []
-        p_value = []
-        stat_arg = []
-        priority = []
-        
+        col_name, argument, value, p_value, stat_arg, priority, stat_test_used = ([] for i in range(7))
+
         #ecdf_graph
         break_percent = []
         
         #box
-        exceed_lower = []
-        exceed_upper = []
-        total = []
-        outlier_percent = []
-        box_min = []
-        box_max = []
-        box_mean = []
+        exceed_lower, exceed_upper, total, outlier_percent, box_min, box_max, box_mean = ([] for i in range(7))
 
         #bar
         anomal_attribute = []
         percent_dominate = []
-        p_value_chi = []
-        stat_arg_chi = []
         mutual = []
         stat_arg_mutual = []
 
         #scatter 
-        col_1_name, col_2_name, corr_type, corr_target = ([] for i in range(4))
+        col_1_name, col_2_name, corr_type, corr_target, corr_method = ([] for i in range(5))
         
         type_prefer = ['category','numeric']
         df_type_filter = self.data_type[self.data_type.col_type.isin(type_prefer)]
@@ -833,9 +1069,9 @@ class Data_prep:
         }
 
         switcher_target = {
-            'numeric': self._numerical_test,
+            'numeric': self._numerical_test_target,
             'category': self._categorical_test_target,
-            ('numeric','numeric'): self._num_num_test,
+            ('numeric','numeric'): self._num_num_test_target,
             ('numeric','category'): self._num_cat_test,
             ('category','numeric'): self._num_cat_test,
             ('category','category'): self._cat_cat_test,
@@ -859,8 +1095,18 @@ class Data_prep:
                             col_name.append(result_single[0])
                             dis_type.append(result_single[1])
                             mode_type.append(result_single[2])
-                            data_return = {'col_name':col_name, 'dis_type':dis_type, 'mode_type': mode_type}
+                            p_value.append(result_single[3][0])
+                            stat_arg.append(result_single[3][1])
+                            priority.append(result_single[4])
+                            stat_test_used.append(result_single[5])
+                            mutual.append(result_single[6][0])
+                            stat_arg_mutual.append(result_single[6][1])
+
+                            data_return = {'col_name':col_name, 'dis_type':dis_type, 'mode_type': mode_type,
+                            'p_value': p_value, 'stat_arg': stat_arg, 'priority': priority, 'stat_test_used': stat_test_used,
+                            'mutual': mutual, 'stat_arg_mutual': stat_arg_mutual}
                             df_return = pd.DataFrame(data_return)
+                            df_return = df_return [df_return['col_name'] != self.target]
                                 
                         elif g_type == "ecdf":
                             col_name.append(result_single[0])
@@ -877,16 +1123,39 @@ class Data_prep:
                                 anomal_attribute.append(result_single[1][1])
                                 value.append(result_single[1][2])
                                 percent_dominate.append(result_single[1][3]) 
-                                p_value_chi.append(result_single[2][0])
-                                stat_arg_chi.append(result_single[2][1])
-                                mutual.append(result_single[3][0])
-                                stat_arg_mutual.append(result_single[3][1])
-                                priority.append(result_single[4])
+                                p_value.append(result_single[2][0])
+                                stat_arg.append(result_single[2][1])
+                                priority.append(result_single[3])
+                                stat_test_used.append(result_single[4])
+                                mutual.append(result_single[5][0])
+                                stat_arg_mutual.append(result_single[5][1])
+
                                 data_return = {'col_name':col_name, 'argument':argument, 'anomal_attribute': anomal_attribute,
-                                            'anomal_value': value, 'percent_dominate': percent_dominate, 'p_value_chi': p_value_chi,
-                                            'stat_arg_chi': stat_arg_chi,'mutual_value': mutual,
-                                            'stat_arg_mutual': stat_arg_mutual, 'priority': priority}
+                                            'anomal_value': value, 'percent_dominate': percent_dominate, 'p_value': p_value,
+                                            'stat_arg': stat_arg, 'priority': priority, 'stat_test_used': stat_test_used,
+                                            'mutual': mutual, 'stat_arg_mutual': stat_arg_mutual}
                                 df_return = pd.DataFrame(data_return)
+                                df_return = df_return[df_return['col_name'] != self.target]
+
+                            elif self.data_type[self.data_type['col_name'] == self.target]['col_type'].values[0] == 'numeric':
+                                col_name.append(result_single[0])
+                                argument.append(result_single[1][0])
+                                anomal_attribute.append(result_single[1][1])
+                                value.append(result_single[1][2])
+                                percent_dominate.append(result_single[1][3]) 
+                                p_value.append(result_single[2][0])
+                                stat_arg.append(result_single[2][1])
+                                priority.append(result_single[3])
+                                stat_test_used.append(result_single[4])
+                                mutual.append(result_single[5][0])
+                                stat_arg_mutual.append(result_single[5][1])
+
+                                data_return = {'col_name':col_name, 'argument':argument, 'anomal_attribute': anomal_attribute,
+                                            'anomal_value': value, 'percent_dominate': percent_dominate, 'p_value': p_value,
+                                            'stat_arg': stat_arg, 'priority': priority, 'stat_test_used': stat_test_used,
+                                            'mutual': mutual, 'stat_arg_mutual': stat_arg_mutual}
+                                df_return = pd.DataFrame(data_return)
+                                df_return = df_return[df_return['col_name'] != self.target]
                         
                         elif g_type == "box":
                             col_name.append(result_single[0])
@@ -898,6 +1167,7 @@ class Data_prep:
                             box_min.append(result_single[1][5])
                             box_max.append(result_single[1][6])
                             box_mean.append(result_single[1][7])
+
                             data_return = {'col_name':col_name, 'exceed_lower':exceed_lower, 'exceed_upper': exceed_upper,
                                         'total': total, 'outlier_percent': outlier_percent, 'argument': argument, 
                                         'min': box_min, 'max': box_max, 'mean': box_mean}
@@ -906,7 +1176,7 @@ class Data_prep:
 
             elif g_type in double_col:
                 for i,r in df_combine_filter.iterrows():
-                    func_double = switcher.get((r.values[2],r.values[3]), lambda: "Error: Invalid column type presented")
+                    func_double = switcher_target.get((r.values[2],r.values[3]), lambda: "Error: Invalid column type presented")
                     result_double = func_double(r.values[0], r.values[1], g_type)
                     if result_double != None:
                         if g_type == "scatter":
@@ -914,10 +1184,9 @@ class Data_prep:
                             col_2_name.append(result_double[1])
                             corr_type.append(result_double[2])
                             corr_target.append(result_double[3])
-                            data_return = {'col_1_name':col_1_name, 'col_2_name':col_2_name, 'corr_type': corr_type, 'corr_target': corr_target}
+                            corr_method.append(result_double[4])
+                            data_return = {'col_1_name':col_1_name, 'col_2_name':col_2_name, 'corr_type': corr_type, 'corr_target': corr_target, 'corr_method': corr_method}
                             df_return = pd.DataFrame(data_return)
-
-
 
         else:
             if g_type in single_col:
@@ -978,7 +1247,6 @@ class Data_prep:
                             corr_target.append(result_double[3])
                             data_return = {'col_1_name':col_1_name, 'col_2_name':col_2_name, 'corr_type': corr_type, 'corr_target': corr_target}
                             df_return = pd.DataFrame(data_return)
-
-                            
+                                  
         return df_return
 
