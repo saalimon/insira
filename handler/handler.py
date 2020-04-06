@@ -155,14 +155,21 @@ def time():
     # create new best solution later 
     time_col = col[(col.col_type == 'date')].col_name.values
     numeric_col = col[(col.col_type == 'numeric')].col_name.values
-    print(time_col)
-    print(numeric_col)
+    # print(time_col)
+    # print(numeric_col)
+    
+
     for t in time_col:
         for n in numeric_col:
             name = t+','+n
             temp = df_obj.df[[t,n]]
             temp.columns = ['x','y']
             temp['x']= temp['x'].dt.strftime('%Y-%m-%d')
+            # print(temp.head())
+            test_time = functions.Timeanalyze(temp)
+            # print(test_time.x)
+            print(name+' is '+str(test_time._isStationarity()))
+            test_time._ETS()
             temp = temp.to_dict(orient='records')
             time['Colnames'].append(name)
             time['Values'].append({name:temp})
@@ -199,6 +206,9 @@ class Data(Resource):
             line = {'Colnames':[],'Values':[],'Descriptions':[]}
             
             return line, {'Access-Control-Allow-Origin': '*'}
+        elif args1 == 'test':
+            test = {'Test':''}
+            return test, {'Access-Control-Allow-Origin': '*'}
         else:
             all_graph = {
                             'Heatmap':{'Colnames':[],'Values':[],'Descriptions':[]},
