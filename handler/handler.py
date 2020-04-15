@@ -133,7 +133,7 @@ def ecdf():
         for x in colname:
             # print(x)
             description = 'กราฟนี้เป็นกราฟแจกแจงสะสมเชิงประจักษ์ของ {} '.format(x)
-            _ecdf = df_obj.prep_ecdf(x)
+            _ecdf = df_obj._prep_ecdf(x)
             # print(_ecdf[0])
             if _ecdf[0] > 0:
                 _ecdf = _ecdf[1].to_dict(orient='records')
