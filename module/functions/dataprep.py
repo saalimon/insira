@@ -565,17 +565,7 @@ class Data_prep:
         df_label = self._label_encoder()
 
         try:
-            try:
-                dummy_list = []
-                for i in df_label[col_name].values:
-                    temp_list = []
-                    temp_list.append(i)
-                    dummy_list.append(temp_list)
-
-            except ValueError:
-                return 'Error: incorrect column name error in _chi_sq function'
-
-            X = dummy_list
+            X = df_label[col_name].values.reshape(-1, 1)
             y = df_label[self.target].values
             
             chi_score, p_value = feature_selection.chi2(X, y)
@@ -611,17 +601,7 @@ class Data_prep:
         #encoded categorical to numeric
         df_label = self._label_encoder()
 
-        try:
-            dummy_list = []
-            for i in df_label[col].values:
-                temp_list = []
-                temp_list.append(i)
-                dummy_list.append(temp_list)
-
-        except ValueError:
-            return 'Error: incorrect column name error in _anova_ttest function'
-
-        X = dummy_list
+        X = df_label[col].values.reshape(-1, 1)
         y = df_label[self.target].values
 
         try:
@@ -682,17 +662,7 @@ class Data_prep:
         #encoded categorical to numeric
         df_label = self._label_encoder()
 
-        try:
-            dummy_list = []
-            for i in df_label[col].values:
-                temp_list = []
-                temp_list.append(i)
-                dummy_list.append(temp_list)
-
-        except ValueError:
-            return 'Error: incorrect column name error in _kruskal_u_test function'
-
-        X = dummy_list
+        X = df_label[col].values.reshape(-1, 1)
         y = df_label[self.target].values
 
         try:
@@ -749,17 +719,7 @@ class Data_prep:
         stat_sig = 0
         stat_sig_argument = ""
 
-        try:
-            dummy_list = []
-            for i in self.df[col].values:
-                temp_list = []
-                temp_list.append(i)
-                dummy_list.append(temp_list)
-
-        except ValueError:
-            return 'Error: incorrect column name error in _f_regression_sign function'
-
-        X = dummy_list
+        X = self.df[col].values.reshape(-1, 1)
         y = self.df[self.target].values
 
         try:
@@ -815,17 +775,7 @@ class Data_prep:
         stat_sig = 0
         stat_sig_argument = ""
 
-        try:
-            dummy_list = []
-            for i in self.df[col].values:
-                temp_list = []
-                temp_list.append(i)
-                dummy_list.append(temp_list)
-
-        except ValueError:
-            return 'Error: incorrect column name error in _f_regression_sign function'
-
-        X = dummy_list
+        X = self.df[col].values.reshape(-1, 1)
         y = self.df[self.target].values
 
         try:
@@ -868,19 +818,12 @@ class Data_prep:
         df_label = self._label_encoder()
         try:
             if self.data_type[self.data_type['col_name'] == self.target]['col_type'].values[0] == 'category':
-                try:
-                    dummy_list = []
-                    for i in df_label[col].values:
-                        temp_list = []
-                        temp_list.append(i)
-                        dummy_list.append(temp_list)
-                                    
-                except ValueError:
-                    return 'Error: incorrect column name'
 
-                X = dummy_list
+                X = df_label[col].values.reshape(-1, 1)
                 y = df_label[self.target].values
+
                 mutual = feature_selection.mutual_info_classif(X, y, discrete_features='auto')
+
                 if mutual > 0:
                     is_sig = 1
                     stat_sig = mutual[0]
@@ -890,13 +833,10 @@ class Data_prep:
                     stat_arg = 'ไม่สามารถบ่งบอกข้อมูลของเป้าหมายได้'
 
             elif self.data_type[self.data_type['col_name'] == self.target]['col_type'].values[0] == 'numeric':
-                dummy_list = []
-                for i in df_label[col].values:
-                    temp_list = []
-                    temp_list.append(i)
-                    dummy_list.append(temp_list)
-                X = dummy_list
+
+                X = df_label[col].values.reshape(-1, 1)
                 y = df_label[self.target].values
+
                 mutual = feature_selection.mutual_info_regression(X, y, discrete_features=False)
                 if mutual > 0:
                     is_sig = 1
