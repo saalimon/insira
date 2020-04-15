@@ -11,6 +11,7 @@ from scipy import stats
 class Data_prep:
     def __init__(self, df, target=None):
         self.df = df
+        self.df = self._data_remover()
         self.target = target
         self.df = self._data_conversion()
         self.data_type = self._data_separator()
@@ -56,6 +57,18 @@ class Data_prep:
         # Create DataFrame 
         data_type = pd.DataFrame(data_type_init) 
         return data_type
+
+    def _data_remover(self):
+        """
+        This function is used to remove data that have only one value
+        """
+        temp_df = self.df.copy()
+
+        for i in temp_df:
+            if len(temp_df[i].unique()) == 1:
+                temp_df = temp_df.drop([i], 1)
+
+        return temp_df
 
     def _data_conversion(self):
         """
@@ -733,7 +746,7 @@ class Data_prep:
 
     def _f_regression_sign(self, col):
         '''
-        This function is use to test statistic hypothesis of indepedent category variable and dependent continuous variable
+        This function is use to test statistic hypothesis of indepedent continuous variable and dependent continuous variable
         '''
         is_sig = 0
         stat_sig = 0
@@ -791,6 +804,55 @@ class Data_prep:
                     stat_sig_argument =  "ข้อมูล {0} ไม่มีความแตกต่างของความมัธยฐานกับเป้าหมาย {1}".format(col, self.target)
                     
                 return is_sig, stat_sig, stat_sig_argument, 'sign test'
+            
+            return None, None, None, None
+
+        except:
+            return 'Error: internal function error in _f_regression_sign function'
+    
+    def _f_classif(self, col):
+        '''
+        This function is use to test statistic hypothesis of indepedent continuous variable and dependent category variable
+        '''
+        is_sig = 0
+        stat_sig = 0
+        stat_sig_argument = ""
+
+        try:
+            dummy_list = []
+            for i in self.df[col].values:
+                temp_list = []
+                temp_list.append(i)
+                dummy_list.append(temp_list)
+
+        except ValueError:
+            return 'Error: incorrect column name error in _f_regression_sign function'
+
+        X = dummy_list
+        y = self.df[self.target].values
+
+        try:
+            if self._numercial_data_distribution(col)[1] == 'มีการแจกแจงแบบสมมาตร' or len(self.df[col]) >= 30:
+                f_score, p_value = feature_selection.f_classif(X, y)
+                
+                if p_value <= 0.05:
+                    stat_sig = p_value[0]
+                    stat_sig_argument = "ข้อมูล {0} มีความแตกต่างของความแปรปรวนกับเป้าหมาย {1} อย่างชัดเจน".format(col, self.target)
+                    is_sig = 1
+
+                elif p_value > 0.05 and p_value < 0.1:
+                    stat_sig = p_value[0]
+                    stat_sig_argument =  "ข้อมูล {0} มีความแตกต่างของความแปรปรวนกับเป้าหมาย {1}".format(col, self.target)
+                    is_sig = 1
+
+                else:
+                    stat_sig = p_value[0]
+                    stat_sig_argument =  "ข้อมูล {0} ไม่มีความแตกต่างของความแปรปรวนกับเป้าหมาย {1}".format(col, self.target)
+                    
+                return is_sig, stat_sig, stat_sig_argument, 'f-test'
+
+            else:  
+                return None, None, None, None
             
             return None, None, None, None
 
@@ -919,21 +981,59 @@ class Data_prep:
             score_multi, mode_type = self._find_multimodal(col)
             score = score_his+score_multi  
             res_mutual = self._target_mutual(col)
-            score_mutual = res_mutual[0]   
-            res_f_sign = self._f_regression_sign(col)
-            stat_test_used = res_f_sign[-1]
-            stat_sig = res_f_sign[0] + res_mutual[0]  
-            if stat_sig >= 1 and score >= 1:
-                priority = 3 
-                return col, dis_type, mode_type, res_f_sign[1:3], priority, stat_test_used, res_mutual[1:3]
+            score_mutual = res_mutual[0] 
 
-            elif stat_sig == 0 and score >= 1:
-                priority = 2 
-                return col, dis_type, mode_type, res_f_sign[1:3], priority, stat_test_used, res_mutual[1:3]
-            
-            elif stat_sig >= 1 and score == 0:
-                priority = 1 
-                return col, dis_type, mode_type, res_f_sign[1:3], priority, stat_test_used, res_mutual[1:3]
+            if self.data_type[self.data_type['col_name'] == self.target]['col_type'].values[0] == 'numeric':
+                res_f_sign = self._f_regression_sign(col)
+                stat_test_used = res_f_sign[-1]
+                
+                stat_sig = res_f_sign[0] + res_mutual[0]  
+
+                if stat_sig >= 1 and score >= 1:
+                    priority = 3 
+                    return col, dis_type, mode_type, res_f_sign[1:3], priority, stat_test_used, res_mutual[1:3]
+
+                elif stat_sig == 0 and score >= 1:
+                    priority = 2 
+                    return col, dis_type, mode_type, res_f_sign[1:3], priority, stat_test_used, res_mutual[1:3]
+                
+                elif stat_sig >= 1 and score == 0:
+                    priority = 1 
+                    return col, dis_type, mode_type, res_f_sign[1:3], priority, stat_test_used, res_mutual[1:3]
+
+            elif self.data_type[self.data_type['col_name'] == self.target]['col_type'].values[0] == 'category':
+                res_f_classif = self._f_classif(col)
+                stat_test_used = res_f_classif[-1]
+
+                if stat_test_used != None:
+                    stat_sig = res_f_classif[0] + res_mutual[0]  
+
+                    if stat_sig >= 1 and score >= 1:
+                        priority = 3 
+                        return col, dis_type, mode_type, res_f_classif[1:3], priority, stat_test_used, res_mutual[1:3]
+
+                    elif stat_sig == 0 and score >= 1:
+                        priority = 2 
+                        return col, dis_type, mode_type, res_f_classif[1:3], priority, stat_test_used, res_mutual[1:3]
+                    
+                    elif stat_sig >= 1 and score == 0:
+                        priority = 1 
+                        return col, dis_type, mode_type, res_f_classif[1:3], priority, stat_test_used, res_mutual[1:3]
+
+                else:
+                    stat_sig = res_mutual[0]  
+
+                    if stat_sig >= 1 and score >= 1:
+                        priority = 3 
+                        return col, dis_type, mode_type, None, priority, None, res_mutual[1:3]
+
+                    elif stat_sig == 0 and score >= 1:
+                        priority = 2 
+                        return col, dis_type, mode_type, None, priority, None, res_mutual[1:3]
+                    
+                    elif stat_sig >= 1 and score == 0:
+                        priority = 1 
+                        return col, dis_type, mode_type, None, priority, None, res_mutual[1:3]
 
         elif g_type == 'box':
             res_box = self._find_outlier_box(col)
@@ -1092,16 +1192,28 @@ class Data_prep:
                     result_single = func_single(r.values[0], g_type)
                     if result_single != None:
                         if g_type == "histogram":
-                            col_name.append(result_single[0])
-                            dis_type.append(result_single[1])
-                            mode_type.append(result_single[2])
-                            p_value.append(result_single[3][0])
-                            stat_arg.append(result_single[3][1])
-                            priority.append(result_single[4])
-                            stat_test_used.append(result_single[5])
-                            mutual.append(result_single[6][0])
-                            stat_arg_mutual.append(result_single[6][1])
+                            if result_single[5] != None:
+                                col_name.append(result_single[0])
+                                dis_type.append(result_single[1])
+                                mode_type.append(result_single[2])
+                                p_value.append(result_single[3][0])
+                                stat_arg.append(result_single[3][1])
+                                priority.append(result_single[4])
+                                stat_test_used.append(result_single[5])
+                                mutual.append(result_single[6][0])
+                                stat_arg_mutual.append(result_single[6][1])
 
+                            else:
+                                col_name.append(result_single[0])
+                                dis_type.append(result_single[1])
+                                mode_type.append(result_single[2])
+                                p_value.append(None)
+                                stat_arg.append(None)
+                                priority.append(result_single[4])
+                                stat_test_used.append(None)
+                                mutual.append(result_single[6][0])
+                                stat_arg_mutual.append(result_single[6][1])
+                                
                             data_return = {'col_name':col_name, 'dis_type':dis_type, 'mode_type': mode_type,
                             'p_value': p_value, 'stat_arg': stat_arg, 'priority': priority, 'stat_test_used': stat_test_used,
                             'mutual': mutual, 'stat_arg_mutual': stat_arg_mutual}
