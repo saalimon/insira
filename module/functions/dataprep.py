@@ -610,13 +610,13 @@ class Data_prep:
                 
                 if p_value <= 0.05:
                     stat_sig = p_value[0]
-                    stat_sig_argument = "ข้อมูล {0} ส่งผลต่อเป้าหมาย {1} อย่างมากโดยมีค่าเฉลี่ยแตกต่างกันระหว่างกลุ่มข้อมูล".format(col, self.target)
+                    stat_sig_argument = "ข้อมูล {0} ส่งผลต่อเป้าหมาย {1} อย่างมากโดยมีค่าเฉลี่ยแตกต่างกันอย่างมีนัยยะสำคัญทางสถิติระหว่างกลุ่มข้อมูล".format(col, self.target)
                     is_sig = 1
 
                 elif p_value > 0.05 and p_value < 0.1:
                     stat_sig = p_value[0]
                     
-                    stat_sig_argument =  "ข้อมูล {0} ส่งผลต่อเป้าหมาย {1} โดยมีค่าเฉลี่ยแตกต่างกันระหว่างกลุ่มข้อมูล".format(col, self.target)
+                    stat_sig_argument =  "ข้อมูล {0} ส่งผลต่อเป้าหมาย {1} โดยมีค่าเฉลี่ยแตกต่างกันอย่างค่อนข้างมีนัยยะสำคัญทางสถิติระหว่างกลุ่มข้อมูล".format(col, self.target)
                     is_sig = 1
 
                 else:
@@ -630,13 +630,13 @@ class Data_prep:
 
                 if p_value <= 0.05:
                     stat_sig = p_value[0]
-                    stat_sig_argument = "ข้อมูล {0} ส่งผลต่อเป้าหมาย {1} อย่างมากโดยมีค่าเฉลี่ยแตกต่างกันระหว่างกลุ่มข้อมูล".format(col, self.target)
+                    stat_sig_argument = "ข้อมูล {0} ส่งผลต่อเป้าหมาย {1} อย่างมากโดยมีค่าเฉลี่ยแตกต่างกันอย่างมีนัยยะสำคัญทางสถิติระหว่างกลุ่มข้อมูล".format(col, self.target)
                     is_sig = 1
 
                 elif p_value > 0.05 and p_value < 0.1:
                     stat_sig = p_value[0]
                     
-                    stat_sig_argument =  "ข้อมูล {0} ส่งผลต่อเป้าหมาย {1} โดยมีค่าเฉลี่ยแตกต่างกันระหว่างกลุ่มข้อมูล".format(col, self.target)
+                    stat_sig_argument =  "ข้อมูล {0} ส่งผลต่อเป้าหมาย {1} โดยมีค่าเฉลี่ยแตกต่างกันอย่างค่อนข้างมีนัยยะสำคัญทางสถิติระหว่างกลุ่มข้อมูล".format(col, self.target)
                     is_sig = 1
                 else:
                     stat_sig = p_value[0]
@@ -671,13 +671,13 @@ class Data_prep:
                 
                 if p_value <= 0.05:
                     stat_sig = p_value[0]
-                    stat_sig_argument = "ข้อมูล {0} ส่งผลต่อเป้าหมาย {1} อย่างมากโดยมีค่ามัธยฐานแตกต่างกันระหว่างกลุ่มข้อมูล".format(col, self.target)
+                    stat_sig_argument = "ข้อมูล {0} ส่งผลต่อเป้าหมาย {1} อย่างมากโดยมีค่ามัธยฐานแตกต่างกันอย่างมีนัยยะสำคัญทางสถิติระหว่างกลุ่มข้อมูล".format(col, self.target)
                     is_sig = 1
 
                 elif p_value > 0.05 and p_value < 0.1:
                     stat_sig = p_value[0]
                     
-                    stat_sig_argument =  "ข้อมูล {0} ส่งผลต่อเป้าหมาย {1} โดยมีค่ามัธยฐานแตกต่างกันระหว่างกลุ่มข้อมูล".format(col, self.target)
+                    stat_sig_argument =  "ข้อมูล {0} ส่งผลต่อเป้าหมาย {1} โดยมีค่ามัธยฐานแตกต่างกันอย่างค่อนข้างมีนัยยะสำคัญทางสถิติระหว่างกลุ่มข้อมูล".format(col, self.target)
                     is_sig = 1
                 else:
                     stat_sig = p_value[0]
@@ -690,13 +690,13 @@ class Data_prep:
 
                 if p_value <= 0.05:
                     stat_sig = p_value[0]
-                    stat_sig_argument = "ข้อมูล {0} ส่งผลต่อเป้าหมาย {1} อย่างมากโดยมีค่ามัธยฐานแตกต่างกันระหว่างกลุ่มข้อมูล".format(col, self.target)
+                    stat_sig_argument = "ข้อมูล {0} ส่งผลต่อเป้าหมาย {1} อย่างมากโดยมีค่ามัธยฐานแตกต่างกันอย่างมีนัยยะสำคัญทางสถิติระหว่างกลุ่มข้อมูล".format(col, self.target)
                     is_sig = 1
 
                 elif p_value > 0.05 and p_value < 0.1:
                     stat_sig = p_value[0]
                     
-                    stat_sig_argument =  "ข้อมูล {0} ส่งผลต่อเป้าหมาย {1} โดยมีค่ามัธยฐานแตกต่างกันระหว่างกลุ่มข้อมูล".format(col, self.target)
+                    stat_sig_argument =  "ข้อมูล {0} ส่งผลต่อเป้าหมาย {1} โดยมีค่ามัธยฐานแตกต่างกันอย่างค่อนข้างมีนัยยะสำคัญทางสถิติระหว่างกลุ่มข้อมูล".format(col, self.target)
                     is_sig = 1
                 else:
                     stat_sig = p_value[0]
@@ -729,12 +729,12 @@ class Data_prep:
                 
                 if p_value <= 0.05:
                     stat_sig = p_value[0]
-                    stat_sig_argument = "ข้อมูล {0} มีความแตกต่างของความแปรปรวนกับเป้าหมาย {1} อย่างชัดเจน".format(col, self.target)
+                    stat_sig_argument = "ข้อมูล {0} มีความแตกต่างของความแปรปรวนกับเป้าหมาย {1} อย่างมีนัยยะสำคัญทางสถิติ".format(col, self.target)
                     is_sig = 1
 
                 elif p_value > 0.05 and p_value < 0.1:
                     stat_sig = p_value[0]
-                    stat_sig_argument =  "ข้อมูล {0} มีความแตกต่างของความแปรปรวนกับเป้าหมาย {1}".format(col, self.target)
+                    stat_sig_argument =  "ข้อมูล {0} มีความแตกต่างของความแปรปรวนกับเป้าหมาย {1} ค่อนข้างมีนัยยะสำคัญทางสถิติ".format(col, self.target)
                     is_sig = 1
 
                 else:
@@ -748,12 +748,12 @@ class Data_prep:
 
                 if p_value <= 0.05:
                     stat_sig = p_value[0]
-                    stat_sig_argument = "ข้อมูล {0} มีความแตกต่างของความมัธยฐานกับเป้าหมาย {1} อย่างชัดเจน".format(col, self.target)
+                    stat_sig_argument = "ข้อมูล {0} มีความแตกต่างของความมัธยฐานกับเป้าหมาย {1} อย่างมีนัยยะสำคัญทางสถิติ".format(col, self.target)
                     is_sig = 1
 
                 elif p_value > 0.05 and p_value < 0.1:
                     stat_sig = p_value[0]
-                    stat_sig_argument =  "ข้อมูล {0} มีความแตกต่างของความมัธยฐานกับเป้าหมาย {1}".format(col, self.target)
+                    stat_sig_argument =  "ข้อมูล {0} มีความแตกต่างของความมัธยฐานกับเป้าหมาย {1} ค่อนข้างมีนัยยะสำคัญทางสถิติ".format(col, self.target)
                     is_sig = 1
 
                 else:
@@ -784,12 +784,12 @@ class Data_prep:
                 
                 if p_value <= 0.05:
                     stat_sig = p_value[0]
-                    stat_sig_argument = "ข้อมูล {0} มีความแตกต่างของความแปรปรวนกับเป้าหมาย {1} อย่างชัดเจน".format(col, self.target)
+                    stat_sig_argument = "ข้อมูล {0} มีความแตกต่างของความแปรปรวนกับเป้าหมาย {1} อย่างมีนัยยะสำคัญทางสถิติ".format(col, self.target)
                     is_sig = 1
 
                 elif p_value > 0.05 and p_value < 0.1:
                     stat_sig = p_value[0]
-                    stat_sig_argument =  "ข้อมูล {0} มีความแตกต่างของความแปรปรวนกับเป้าหมาย {1}".format(col, self.target)
+                    stat_sig_argument =  "ข้อมูล {0} มีความแตกต่างของความแปรปรวนกับเป้าหมาย {1} ค่อนข้างมีนัยยะสำคัญทางสถิติ".format(col, self.target)
                     is_sig = 1
 
                 else:
